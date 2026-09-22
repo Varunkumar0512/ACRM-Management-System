@@ -17,6 +17,7 @@ import {
   ArrowRight,
   AlertCircle,
   FileCheck,
+  Sparkles,
 } from 'lucide-react';
 
 export const FacultyDashboard: React.FC = () => {
@@ -81,82 +82,69 @@ export const FacultyDashboard: React.FC = () => {
           justifyContent: 'space-between',
           flexWrap: 'wrap',
           gap: '1rem',
+          boxShadow: 'var(--shadow-xs)',
         }}
       >
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.35rem' }}>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
               {user?.fullName}
             </h1>
-            <span className="acr-badge acr-badge-info">
+            <span className="acr-badge acr-badge-primary">
               {profile?.designation || 'Associate Professor'}
             </span>
           </div>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+          <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
             Department of {profile?.department || 'Engineering'} • {profile?.experienceYears || 12} Years Experience • Cabin: {profile?.cabinLocation || 'Main Block'}
           </p>
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem' }}>
           <Link to="/projects?filter=guided" className="acr-btn acr-btn-primary">
-            <FolderGit2 size={16} />
-            <span>Assigned Projects Workspace</span>
+            <FolderGit2 size={15} />
+            <span>Assigned Projects</span>
+          </Link>
+          <Link to="/ipr/reviews" className="acr-btn acr-btn-secondary">
+            <Sparkles size={15} color="#7c3aed" />
+            <span>IPR Reviews</span>
           </Link>
         </div>
       </div>
 
-      {/* Purposeful Mentorship Capacity Metrics */}
+      {/* KPI Metrics */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gridTemplateColumns: 'repeat(3, 1fr)',
           gap: '1.25rem',
           marginBottom: '2rem',
         }}
       >
-        <div className="acr-card acr-card-body">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-              Active Guided Projects
-            </span>
-            <FolderGit2 size={18} color="var(--primary-600)" />
+        <div className="acr-kpi-card">
+          <div className="acr-kpi-header">
+            <span className="acr-kpi-title">Active Guided Projects</span>
+            <FolderGit2 size={16} color="var(--primary-600)" />
           </div>
-          <div style={{ fontSize: '1.75rem', fontWeight: 800, marginTop: '0.5rem', color: 'var(--text-primary)' }}>
-            {stats?.activeGuidedProjects || 0}
-          </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-            Current institutional mentorship load
-          </div>
+          <div className="acr-kpi-value">{stats?.activeGuidedProjects || 0}</div>
+          <div className="acr-kpi-sub">Current institutional mentorship load</div>
         </div>
 
-        <div className="acr-card acr-card-body">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-              Available Slots
-            </span>
-            <GraduationCap size={18} color="#059669" />
+        <div className="acr-kpi-card">
+          <div className="acr-kpi-header">
+            <span className="acr-kpi-title">Mentorship Capacity</span>
+            <GraduationCap size={16} color="#059669" />
           </div>
-          <div style={{ fontSize: '1.75rem', fontWeight: 800, marginTop: '0.5rem', color: 'var(--text-primary)' }}>
-            {stats?.availableSlots || 0} / {stats?.capacityLimit || 5}
-          </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-            Capacity per departmental regulations
-          </div>
+          <div className="acr-kpi-value">{stats?.availableSlots || 0} / {stats?.capacityLimit || 5}</div>
+          <div className="acr-kpi-sub">Available slots per university policy</div>
         </div>
 
-        <div className="acr-card acr-card-body">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-              Pending Guidance Requests
-            </span>
-            <AlertCircle size={18} color="#d97706" />
+        <div className="acr-kpi-card">
+          <div className="acr-kpi-header">
+            <span className="acr-kpi-title">Pending Guidance Requests</span>
+            <AlertCircle size={16} color="#d97706" />
           </div>
-          <div style={{ fontSize: '1.75rem', fontWeight: 800, marginTop: '0.5rem', color: 'var(--text-primary)' }}>
-            {stats?.pendingRequestsCount || 0}
-          </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-            Student teams awaiting your response
-          </div>
+          <div className="acr-kpi-value">{stats?.pendingRequestsCount || 0}</div>
+          <div className="acr-kpi-sub">Student proposals awaiting approval</div>
         </div>
       </div>
 
@@ -165,7 +153,7 @@ export const FacultyDashboard: React.FC = () => {
         <div className="acr-card" style={{ marginBottom: '2rem', borderLeft: '4px solid #d97706' }}>
           <div className="acr-card-header">
             <div>
-              <h2 style={{ fontSize: '1.05rem', fontWeight: 700 }}>Pending Student Guidance Requests</h2>
+              <h2 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-primary)' }}>Pending Student Guidance Requests</h2>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                 Review project problem statements and accept or decline mentorship requests
               </p>
@@ -190,7 +178,7 @@ export const FacultyDashboard: React.FC = () => {
                   }}
                 >
                   <div style={{ flex: 1, minWidth: '300px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
                       <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700 }}>
                         {proj.code}
                       </span>
@@ -198,10 +186,10 @@ export const FacultyDashboard: React.FC = () => {
                       <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{proj.domainId?.name}</span>
                     </div>
 
-                    <Link to={`/projects/${proj._id}`} style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    <Link to={`/projects/${proj._id}`} style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                       {proj.title}
                     </Link>
-                    <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem', lineHeight: 1.45 }}>
                       {proj.problemStatement?.slice(0, 160)}...
                     </p>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
@@ -238,7 +226,7 @@ export const FacultyDashboard: React.FC = () => {
       <div className="acr-card">
         <div className="acr-card-header">
           <div>
-            <h2 style={{ fontSize: '1.05rem', fontWeight: 700 }}>Your Active Guided Projects</h2>
+            <h2 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-primary)' }}>Your Active Guided Projects</h2>
             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
               Student research teams currently under your primary guidance or co-guidance
             </p>
@@ -277,7 +265,7 @@ export const FacultyDashboard: React.FC = () => {
                       <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.role?.replace(/_/g, ' ')}</span>
                     </div>
 
-                    <Link to={`/projects/${p._id}`} style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    <Link to={`/projects/${p._id}`} style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>
                       {p.title}
                     </Link>
 

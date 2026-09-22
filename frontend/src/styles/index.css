@@ -1,109 +1,141 @@
-/* ACR — Automated Campus Research Design System
-   Institutional Academic Visual Language
-*/
+/* ==========================================================================
+   ACRM — Automated Campus Research Management Platform
+   ₹10-Lakh-Class High-End Enterprise Product Design System
+   ========================================================================== */
 
 :root {
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  /* Light Theme Palette */
-  --bg-page: #f8fafc;
-  --bg-surface: #ffffff;
-  --bg-surface-hover: #f1f5f9;
-  --bg-subtle: #f8fafc;
-  --bg-muted: #e2e8f0;
-  
-  --border-subtle: #e2e8f0;
-  --border-default: #cbd5e1;
-  --border-focus: #2563eb;
+  /* Strict Brand Palette */
+  --color-deep-navy: #071426;
+  --color-midnight-blue: #0B1F3A;
+  --color-royal-blue: #2457D6;
+  --color-electric-blue: #3B82F6;
+  --color-cyan-accent: #22D3EE;
+  --color-white: #FFFFFF;
+  --color-soft-bg: #F4F7FB;
+  --color-dark-text: #0B1220;
 
-  --text-primary: #0f172a;
+  /* Surfaces & Canvas */
+  --bg-page: #F4F7FB;
+  --bg-surface: #FFFFFF;
+  --bg-surface-hover: #F8FAFC;
+  --bg-subtle: #EDF2F7;
+  --bg-muted: #E2E8F0;
+  --bg-dark-section: #071426;
+  --bg-dark-card: #0B1F3A;
+  --bg-dark-surface: #102A56;
+
+  /* Text Hierarchies */
+  --text-primary: #0B1220;
   --text-secondary: #475569;
   --text-muted: #64748b;
-  --text-inverse: #ffffff;
+  --text-light: #94a3b8;
+  --text-inverse: #FFFFFF;
+  --text-inverse-muted: #94A3B8;
 
-  /* Institutional Accent Tokens */
-  --primary-50: #eff6ff;
-  --primary-100: #dbeafe;
-  --primary-500: #3b82f6;
-  --primary-600: #2563eb;
-  --primary-700: #1d4ed8;
-  --primary-900: #1e3a8a;
+  /* Borders */
+  --border-subtle: #E2E8F0;
+  --border-default: #CBD5E1;
+  --border-focus: #3B82F6;
+  --border-dark: rgba(255, 255, 255, 0.1);
+  --border-dark-glow: rgba(34, 211, 238, 0.35);
 
-  --success-bg: #ecfdf5;
-  --success-border: #a7f3d0;
-  --success-text: #065f46;
+  /* Primary Brand Tokens */
+  --primary-50: #EFF6FF;
+  --primary-100: #DBEAFE;
+  --primary-500: #3B82F6;
+  --primary-600: #2457D6;
+  --primary-700: #1D4ED8;
+  --primary-900: #071426;
 
-  --warning-bg: #fffbeb;
-  --warning-border: #fde68a;
-  --warning-text: #92400e;
+  /* Semantic State Tokens */
+  --success-bg: #ECFDF5;
+  --success-border: #A7F3D0;
+  --success-text: #065F46;
+  --success-solid: #10B981;
 
-  --danger-bg: #fef2f2;
-  --danger-border: #fecaca;
-  --danger-text: #991b1b;
+  --warning-bg: #FFFBEB;
+  --warning-border: #FDE68A;
+  --warning-text: #92400E;
+  --warning-solid: #F59E0B;
 
-  --info-bg: #f0f9ff;
-  --info-border: #bae6fd;
-  --info-text: #075985;
+  --danger-bg: #FEF2F2;
+  --danger-border: #FECACA;
+  --danger-text: #991B1B;
+  --danger-solid: #EF4444;
 
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+  --info-bg: #F0F9FF;
+  --info-border: #BAE6FD;
+  --info-text: #0369A1;
+  --info-solid: #0284C7;
 
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 12px;
+  /* Premium Elevations & Layered Shadows */
+  --shadow-xs: 0 1px 2px 0 rgba(7, 20, 38, 0.04);
+  --shadow-sm: 0 2px 4px 0 rgba(7, 20, 38, 0.06), 0 1px 2px -1px rgba(7, 20, 38, 0.04);
+  --shadow-md: 0 6px 12px -2px rgba(7, 20, 38, 0.08), 0 3px 6px -3px rgba(7, 20, 38, 0.06);
+  --shadow-lg: 0 14px 24px -4px rgba(7, 20, 38, 0.1), 0 6px 12px -6px rgba(7, 20, 38, 0.06);
+  --shadow-xl: 0 24px 48px -8px rgba(7, 20, 38, 0.16), 0 12px 20px -8px rgba(7, 20, 38, 0.08);
+  --shadow-glow-blue: 0 0 25px rgba(36, 87, 214, 0.35);
+  --shadow-glow-cyan: 0 0 25px rgba(34, 211, 238, 0.3);
+
+  /* Curated Geometries */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 20px;
+  --radius-pill: 9999px;
+
+  --transition-fast: 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-theme="dark"] {
-  --bg-page: #0b0f19;
-  --bg-surface: #111827;
-  --bg-surface-hover: #1f2937;
-  --bg-subtle: #162032;
-  --bg-muted: #374151;
+  --bg-page: #071426;
+  --bg-surface: #0B1F3A;
+  --bg-surface-hover: #102A56;
+  --bg-subtle: #0E2445;
+  --bg-muted: #163666;
 
-  --border-subtle: #1f2937;
-  --border-default: #374151;
-  --border-focus: #3b82f6;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-default: rgba(255, 255, 255, 0.16);
+  --border-focus: #3B82F6;
 
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --text-inverse: #0f172a;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --text-light: #475569;
+  --text-inverse: #071426;
 
-  --primary-50: #172554;
-  --primary-100: #1e3a8a;
-  --primary-500: #3b82f6;
-  --primary-600: #2563eb;
-  --primary-700: #1d4ed8;
-  --primary-900: #1e3a8a;
+  --primary-50: #102A56;
+  --primary-100: #163B7A;
+  --primary-500: #3B82F6;
+  --primary-600: #2457D6;
+  --primary-700: #1D4ED8;
 
-  --success-bg: #064e3b;
-  --success-border: #047857;
-  --success-text: #a7f3d0;
-
-  --warning-bg: #78350f;
-  --warning-border: #b45309;
-  --warning-text: #fde68a;
-
-  --danger-bg: #7f1d1d;
-  --danger-border: #b91c1c;
-  --danger-text: #fecaca;
-
-  --info-bg: #0c4a6e;
-  --info-border: #0369a1;
-  --info-text: #bae6fd;
-
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 2px 4px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 12px -2px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 14px 24px -4px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 24px 48px -8px rgba(0, 0, 0, 0.7);
 }
+
+/* ==========================================================================
+   Base Styles
+   ========================================================================== */
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+html {
+  font-size: 14px;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -113,15 +145,22 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
 }
 
 a {
-  color: var(--primary-600);
+  color: var(--color-royal-blue);
   text-decoration: none;
+  transition: all var(--transition-fast);
 }
 
 a:hover {
-  text-decoration: underline;
+  color: var(--color-electric-blue);
 }
 
 button, input, select, textarea {
@@ -129,96 +168,296 @@ button, input, select, textarea {
   font-size: inherit;
 }
 
-/* Base utility classes */
+/* ==========================================================================
+   Gradient Typography Utilities
+   ========================================================================== */
+
+.text-gradient-cyan {
+  background: linear-gradient(135deg, #3B82F6 0%, #22D3EE 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #F59E0B 0%, #FDE047 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-blue {
+  background: linear-gradient(135deg, #2457D6 0%, #60A5FA 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ==========================================================================
+   Layout Containers
+   ========================================================================== */
+
 .container {
-  max-width: 1280px;
+  max-width: 1240px;
   margin: 0 auto;
   padding: 0 1.5rem;
 }
 
-/* Academic Card */
+.container-wide {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+/* ==========================================================================
+   High-End Enterprise Cards
+   ========================================================================== */
+
 .acr-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: all var(--transition-normal);
+  overflow: hidden;
 }
 
-.acr-card:hover {
+.acr-card-interactive {
+  cursor: pointer;
+  position: relative;
+}
+
+.acr-card-interactive:hover {
+  transform: translateY(-4px);
   border-color: var(--border-default);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Floating Glass Card (Dark Backgrounds) */
+.acr-glass-card {
+  background: rgba(11, 31, 58, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 25px 50px -12px rgba(7, 20, 38, 0.45);
+  transition: all var(--transition-normal);
+}
+
+.acr-glass-card:hover {
+  border-color: rgba(34, 211, 238, 0.35);
+  box-shadow: 0 30px 60px -15px rgba(7, 20, 38, 0.6), 0 0 30px rgba(34, 211, 238, 0.1);
 }
 
 .acr-card-header {
-  padding: 1.25rem 1.5rem;
+  padding: 1.15rem 1.35rem;
   border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-surface);
+}
+
+.acr-card-body {
+  padding: 1.35rem;
+}
+
+.acr-card-footer {
+  padding: 0.9rem 1.35rem;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.acr-card-body {
-  padding: 1.5rem;
+/* ==========================================================================
+   Elevated Feature Cards (Capabilities)
+   ========================================================================== */
+
+.acr-feature-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 2rem 1.75rem;
+  box-shadow: var(--shadow-xs);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
 }
 
-.acr-card-footer {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid var(--border-subtle);
-  background: var(--bg-subtle);
+.acr-feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #2457D6 0%, #22D3EE 100%);
+  opacity: 0;
+  transition: opacity var(--transition-normal);
 }
 
-/* Institutional Button System */
+.acr-feature-card:hover {
+  transform: translateY(-4px);
+  border-color: #CBD5E1;
+  box-shadow: 0 20px 35px -10px rgba(7, 20, 38, 0.12);
+}
+
+.acr-feature-card:hover::before {
+  opacity: 1;
+}
+
+.acr-feature-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  transition: all var(--transition-normal);
+}
+
+.acr-feature-card:hover .acr-feature-icon-box {
+  transform: scale(1.05);
+}
+
+/* ==========================================================================
+   KPI & Metric Cards
+   ========================================================================== */
+
+.acr-kpi-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 1.35rem 1.5rem;
+  box-shadow: var(--shadow-xs);
+  position: relative;
+  transition: all var(--transition-normal);
+}
+
+.acr-kpi-card:hover {
+  border-color: var(--border-default);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.acr-kpi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.acr-kpi-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.acr-kpi-value {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  line-height: 1.15;
+}
+
+.acr-kpi-sub {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 0.35rem;
+}
+
+/* ==========================================================================
+   Institutional & Enterprise Button System
+   ========================================================================== */
+
 .acr-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  font-weight: 500;
-  font-size: 0.875rem;
-  padding: 0.5rem 1rem;
+  gap: 0.55rem;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  padding: 0.6rem 1.15rem;
   border-radius: var(--radius-md);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--transition-fast);
   white-space: nowrap;
   line-height: 1.25;
+  user-select: none;
 }
 
 .acr-btn:disabled {
-  opacity: 0.55;
+  opacity: 0.5;
   cursor: not-allowed;
+  pointer-events: none;
 }
 
+/* Primary Bright Blue Gradient with Glow */
 .acr-btn-primary {
-  background-color: var(--primary-600);
-  color: #ffffff;
-  border-color: var(--primary-700);
+  background: linear-gradient(135deg, #2457D6 0%, #3B82F6 100%);
+  color: #FFFFFF;
+  border-color: #2457D6;
+  box-shadow: 0 4px 14px rgba(36, 87, 214, 0.35);
 }
 
 .acr-btn-primary:hover:not(:disabled) {
-  background-color: var(--primary-700);
+  background: linear-gradient(135deg, #1D4ED8 0%, #2563EB 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(36, 87, 214, 0.45);
   text-decoration: none;
 }
 
+.acr-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Secondary Enterprise Card Button */
 .acr-btn-secondary {
   background-color: var(--bg-surface);
   color: var(--text-primary);
   border-color: var(--border-default);
+  box-shadow: var(--shadow-xs);
 }
 
 .acr-btn-secondary:hover:not(:disabled) {
   background-color: var(--bg-surface-hover);
+  border-color: var(--color-electric-blue);
+  color: var(--color-royal-blue);
   text-decoration: none;
 }
 
-.acr-btn-danger {
-  background-color: #dc2626;
-  color: #ffffff;
-  border-color: #b91c1c;
+/* Transparent Dark Glass Button with Border */
+.acr-btn-glass-dark {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.acr-btn-danger:hover:not(:disabled) {
-  background-color: #b91c1c;
+.acr-btn-glass-dark:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(34, 211, 238, 0.4);
+  box-shadow: 0 0 15px rgba(34, 211, 238, 0.25);
+  color: #FFFFFF;
+  text-decoration: none;
+}
+
+/* Outlined Cyan / Blue */
+.acr-btn-outline {
+  background: transparent;
+  color: var(--color-royal-blue);
+  border-color: var(--color-electric-blue);
+}
+
+.acr-btn-outline:hover:not(:disabled) {
+  background: var(--primary-50);
+  border-color: var(--color-royal-blue);
   text-decoration: none;
 }
 
@@ -229,47 +468,66 @@ button, input, select, textarea {
 }
 
 .acr-btn-ghost:hover:not(:disabled) {
-  background-color: var(--bg-surface-hover);
+  background-color: var(--bg-subtle);
   color: var(--text-primary);
   text-decoration: none;
 }
 
 .acr-btn-sm {
-  padding: 0.35rem 0.75rem;
+  padding: 0.4rem 0.85rem;
   font-size: 0.75rem;
+  border-radius: var(--radius-sm);
 }
 
 .acr-btn-lg {
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
+  padding: 0.85rem 1.75rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  border-radius: var(--radius-md);
 }
 
-/* Form inputs */
+/* Submit Arrow Interaction */
+.acr-btn-submit-arrow {
+  position: relative;
+  overflow: hidden;
+}
+
+.acr-btn-submit-arrow .arrow-icon {
+  transition: transform var(--transition-fast);
+}
+
+.acr-btn-submit-arrow:hover .arrow-icon {
+  transform: translateX(4px);
+}
+
+/* ==========================================================================
+   High-End Form Controls
+   ========================================================================== */
+
 .acr-label {
   display: block;
-  font-size: 0.8125rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
   color: var(--text-secondary);
-  margin-bottom: 0.35rem;
-  text-transform: uppercase;
-  letter-spacing: 0.025em;
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.02em;
 }
 
 .acr-input, .acr-select, .acr-textarea {
   width: 100%;
-  padding: 0.55rem 0.85rem;
-  font-size: 0.875rem;
-  background-color: var(--bg-surface);
+  padding: 0.65rem 0.95rem;
+  font-size: 0.85rem;
+  background-color: #FFFFFF;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-md);
   color: var(--text-primary);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: all var(--transition-fast);
 }
 
 .acr-input:focus, .acr-select:focus, .acr-textarea:focus {
   outline: none;
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  border-color: var(--color-electric-blue);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2), 0 0 12px rgba(34, 211, 238, 0.12);
 }
 
 .acr-input::placeholder, .acr-textarea::placeholder {
@@ -278,21 +536,40 @@ button, input, select, textarea {
 
 .acr-form-error {
   font-size: 0.75rem;
-  color: #dc2626;
+  color: var(--danger-solid);
   margin-top: 0.35rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
-/* Badges and Chips */
+/* ==========================================================================
+   Badges and Status Indicators
+   ========================================================================== */
+
 .acr-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.2rem 0.55rem;
-  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.22rem 0.65rem;
+  border-radius: var(--radius-pill);
   border: 1px solid transparent;
-  line-height: 1;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.acr-badge-primary {
+  background: rgba(36, 87, 214, 0.1);
+  border-color: rgba(36, 87, 214, 0.25);
+  color: var(--color-royal-blue);
+}
+
+.acr-badge-cyan {
+  background: rgba(34, 211, 238, 0.12);
+  border-color: rgba(34, 211, 238, 0.3);
+  color: #0891B2;
 }
 
 .acr-badge-info {
@@ -320,17 +597,20 @@ button, input, select, textarea {
 }
 
 .acr-badge-neutral {
-  background: var(--bg-muted);
-  border-color: var(--border-default);
+  background: var(--bg-subtle);
+  border-color: var(--border-subtle);
   color: var(--text-secondary);
 }
 
-/* Institutional Table */
+/* ==========================================================================
+   Data Tables
+   ========================================================================== */
+
 .acr-table-container {
   width: 100%;
   overflow-x: auto;
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--bg-surface);
 }
 
@@ -338,24 +618,26 @@ button, input, select, textarea {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
 }
 
 .acr-table th {
   background: var(--bg-subtle);
-  padding: 0.75rem 1rem;
-  font-weight: 600;
+  padding: 0.85rem 1.15rem;
+  font-weight: 700;
   color: var(--text-secondary);
   border-bottom: 1px solid var(--border-subtle);
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .acr-table td {
-  padding: 0.85rem 1rem;
+  padding: 0.95rem 1.15rem;
   border-bottom: 1px solid var(--border-subtle);
   color: var(--text-primary);
+  vertical-align: middle;
 }
 
 .acr-table tr:last-child td {
@@ -366,44 +648,47 @@ button, input, select, textarea {
   background: var(--bg-surface-hover);
 }
 
-/* Status dots */
-.acr-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-}
+/* ==========================================================================
+   Full-Screen Portal Access Overlay
+   ========================================================================== */
 
-/* Modal Overlay */
-.acr-modal-backdrop {
+.acr-portal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(4px);
+  z-index: 9999;
+  background: radial-gradient(circle at top center, #102A56 0%, #071426 70%);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 999;
-  padding: 1rem;
+  padding: 2rem;
+  animation: acr-overlay-slide-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.acr-modal {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg);
-  width: 100%;
-  max-width: 650px;
-  max-height: 90vh;
-  overflow-y: auto;
+@keyframes acr-overlay-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-/* Skeleton Loading */
+/* Multi-Step Horizontal Slide Transitions */
+.acr-step-slide {
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   Skeleton & Loading Keyframes
+   ========================================================================== */
+
 .acr-skeleton {
   background: linear-gradient(
     90deg,
     var(--bg-muted) 25%,
-    var(--bg-surface-hover) 37%,
+    var(--bg-subtle) 37%,
     var(--bg-muted) 63%
   );
   background-size: 400% 100%;
@@ -412,10 +697,19 @@ button, input, select, textarea {
 }
 
 @keyframes acr-skeleton-loading {
-  0% {
-    background-position: 100% 50%;
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-cyan-glow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
   }
-  100% {
-    background-position: 0 50%;
+  50% {
+    box-shadow: 0 0 30px rgba(34, 211, 238, 0.45);
   }
 }

@@ -12,12 +12,8 @@ import {
   Award,
   FileText,
   Clock,
-  CheckCircle2,
   ArrowRight,
   PlusCircle,
-  Search,
-  BookOpen,
-  FolderGit2,
   Scale,
 } from 'lucide-react';
 import { IIPRDisclosure } from '../../types';
@@ -64,10 +60,10 @@ export const IprDashboard: React.FC = () => {
     <div>
       <Breadcrumbs items={[{ label: 'Dashboard', path: '/dashboard' }, { label: 'IPR & Innovation' }]} />
 
-      {/* Welcome & Action Banner */}
+      {/* Enterprise Header Banner */}
       <div
         style={{
-          padding: '2rem',
+          padding: '1.75rem 2rem',
           backgroundColor: 'var(--bg-surface)',
           border: '1px solid var(--border-subtle)',
           borderRadius: 'var(--radius-lg)',
@@ -77,30 +73,31 @@ export const IprDashboard: React.FC = () => {
           justifyContent: 'space-between',
           flexWrap: 'wrap',
           gap: '1.5rem',
+          boxShadow: 'var(--shadow-xs)',
         }}
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.35rem' }}>
-            <span className="acr-badge acr-badge-info" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-              <ShieldCheck size={14} />
-              <span>Institutional IPR Protection</span>
+            <span className="acr-badge acr-badge-primary">
+              <ShieldCheck size={13} />
+              <span>Institutional IPR Office</span>
             </span>
           </div>
-          <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.35rem' }}>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em', marginBottom: '0.25rem' }}>
             IPR & Innovation Management
           </h1>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', maxWidth: '680px', lineHeight: 1.5 }}>
+          <p style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', maxWidth: '680px', lineHeight: 1.5 }}>
             Protect campus inventions, patents, copyrights, and industrial designs. All submissions undergo an AI-assisted preliminary novelty screening before formal institutional review.
           </p>
         </div>
 
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           <Link to="/ipr/novelty" className="acr-btn acr-btn-primary">
-            <Sparkles size={16} />
+            <Sparkles size={15} />
             <span>AI Novelty Screening</span>
           </Link>
           <Link to="/ipr/my" className="acr-btn acr-btn-secondary">
-            <FileText size={16} />
+            <FileText size={15} />
             <span>My Disclosures</span>
           </Link>
         </div>
@@ -110,73 +107,53 @@ export const IprDashboard: React.FC = () => {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gridTemplateColumns: 'repeat(4, 1fr)',
           gap: '1.25rem',
           marginBottom: '2rem',
         }}
       >
-        <div className="acr-card acr-card-body">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-              Total Disclosures
-            </span>
-            <FileText size={18} color="var(--primary-600)" />
+        <div className="acr-kpi-card">
+          <div className="acr-kpi-header">
+            <span className="acr-kpi-title">Total Disclosures</span>
+            <FileText size={16} color="var(--primary-600)" />
           </div>
-          <div style={{ fontSize: '1.75rem', fontWeight: 800, marginTop: '0.5rem', color: 'var(--text-primary)' }}>
-            {disclosures.length}
-          </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-            Institutional filings & drafts
-          </div>
+          <div className="acr-kpi-value">{disclosures.length}</div>
+          <div className="acr-kpi-sub">Institutional filings & drafts</div>
         </div>
 
-        <div className="acr-card acr-card-body">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-              Under Review
-            </span>
-            <Clock size={18} color="#d97706" />
+        <div className="acr-kpi-card">
+          <div className="acr-kpi-header">
+            <span className="acr-kpi-title">Under Review</span>
+            <Clock size={16} color="#d97706" />
           </div>
-          <div style={{ fontSize: '1.75rem', fontWeight: 800, marginTop: '0.5rem', color: 'var(--text-primary)' }}>
+          <div className="acr-kpi-value">
             {disclosures.filter((d) => d.status === 'INITIAL_REVIEW' || d.status === 'ASSESSMENT' || d.status === 'SUBMITTED').length}
           </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-            Active committee assessments
-          </div>
+          <div className="acr-kpi-sub">Active committee assessments</div>
         </div>
 
-        <div className="acr-card acr-card-body">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-              Patents Filed / Granted
-            </span>
-            <Award size={18} color="#059669" />
+        <div className="acr-kpi-card">
+          <div className="acr-kpi-header">
+            <span className="acr-kpi-title">Patents Filed</span>
+            <Award size={16} color="#059669" />
           </div>
-          <div style={{ fontSize: '1.75rem', fontWeight: 800, marginTop: '0.5rem', color: 'var(--text-primary)' }}>
+          <div className="acr-kpi-value">
             {disclosures.filter((d) => d.status === 'FILED' || d.status === 'GRANTED').length}
           </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-            Secured intellectual property
-          </div>
+          <div className="acr-kpi-sub">Secured campus intellectual property</div>
         </div>
 
-        <div className="acr-card acr-card-body">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)' }}>
-              Categories Supported
-            </span>
-            <Scale size={18} color="#7c3aed" />
+        <div className="acr-kpi-card">
+          <div className="acr-kpi-header">
+            <span className="acr-kpi-title">IPR Categories</span>
+            <Scale size={16} color="#7c3aed" />
           </div>
-          <div style={{ fontSize: '1.75rem', fontWeight: 800, marginTop: '0.5rem', color: 'var(--text-primary)' }}>
-            4
-          </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-            Patents, Copyrights, Trademarks, Inventions
-          </div>
+          <div className="acr-kpi-value">4</div>
+          <div className="acr-kpi-sub">Patents, Copyrights, Trademarks, Inventions</div>
         </div>
       </div>
 
-      {/* Mandatory Workflow Banner */}
+      {/* Workflow Banner */}
       <div
         style={{
           padding: '1.25rem 1.5rem',
@@ -192,13 +169,13 @@ export const IprDashboard: React.FC = () => {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <Sparkles size={22} color="var(--primary-600)" />
+          <Sparkles size={20} color="var(--primary-600)" />
           <div>
             <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-              Mandatory AI-Assisted Preliminary Novelty Screening
+              Preliminary AI Novelty Screening
             </div>
-            <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-              Before final IPR disclosure submission, all campus innovations must complete preliminary screening and source comparison.
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              All project innovations undergo automated novelty evaluation against international prior art before committee review.
             </div>
           </div>
         </div>
@@ -213,7 +190,7 @@ export const IprDashboard: React.FC = () => {
       <div className="acr-card">
         <div className="acr-card-header">
           <div>
-            <h2 style={{ fontSize: '1.05rem', fontWeight: 700 }}>Institutional IPR Disclosures</h2>
+            <h2 style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--text-primary)' }}>Institutional IPR Disclosures</h2>
             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
               Disclosures under review, recommended for filing, or completed
             </p>
@@ -238,7 +215,7 @@ export const IprDashboard: React.FC = () => {
               />
             </div>
           ) : (
-            <div className="acr-table-container">
+            <div className="acr-table-container" style={{ border: 'none', borderRadius: 0 }}>
               <table className="acr-table">
                 <thead>
                   <tr>
