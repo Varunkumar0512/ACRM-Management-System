@@ -1,7 +1,23 @@
 import axios, { AxiosError } from 'axios';
 
+const getBaseUrl = (): string => {
+  const envUrl = (import.meta.env.VITE_API_URL || '').trim().replace(/\/+$/, '');
+  if (!envUrl) {
+    return '/api/v1';
+  }
+  if (envUrl.endsWith('/api/v1')) {
+    return envUrl;
+  }
+  if (envUrl.endsWith('/api')) {
+    return `${envUrl}/v1`;
+  }
+  return `${envUrl}/api/v1`;
+};
+
+export const apiBaseUrl = getBaseUrl();
+
 export const apiClient = axios.create({
-baseURL: `${import.meta.env.VITE_API_URL || ''}/api/v1`,
+  baseURL: apiBaseUrl,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -52,7 +68,7 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshResponse = await axios.post('/api/v1/auth/refresh', {}, { withCredentials: true });
+        const refreshResponse = await axios.post(`${apiBaseUrl}/auth/refresh`, {}, { withCredentials: true });
         const newAccessToken = refreshResponse.data.data.accessToken;
 
         apiClient.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;

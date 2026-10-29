@@ -49,11 +49,12 @@ export const SignInPage: React.FC = () => {
   };
 
   // Check if Google OAuth client ID is configured and functional
-  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const googleClientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
   const isGoogleAuthConfigured = Boolean(
     googleClientId &&
-    googleClientId.trim() !== '' &&
-    !googleClientId.includes('your_google_client_id')
+    googleClientId !== '' &&
+    !googleClientId.includes('your_google_client_id') &&
+    !googleClientId.includes('your-google-client-id')
   );
 
   const validateForm = (): boolean => {
@@ -108,6 +109,18 @@ export const SignInPage: React.FC = () => {
       );
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Handle successful Google authentication redirect strictly based on backend-verified role
+  const handleGoogleSuccess = (authData?: any) => {
+    const backendRole = (authData?.user?.role || '').toUpperCase();
+    if (backendRole === 'ADMIN') {
+      navigate('/admin/dashboard', { replace: true });
+    } else if (backendRole === 'FACULTY') {
+      navigate('/faculty/dashboard', { replace: true });
+    } else {
+      navigate('/student/dashboard', { replace: true });
     }
   };
 
@@ -880,40 +893,60 @@ export const SignInPage: React.FC = () => {
             </button>
           </form>
 
-          {/* Conditional Alternative Authentication (Google) */}
-          {isGoogleAuthConfigured && (
-            <>
+          {/* Alternative Authentication (Google) */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              margin: '1.5rem 0 1.25rem',
+            }}
+          >
+            <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
+            <span
+              style={{
+                padding: '0 0.85rem',
+                fontSize: '0.72rem',
+                color: '#94A3B8',
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
+                fontWeight: 600,
+              }}
+            >
+              Or continue with
+            </span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
+          </div>
+
+          <div style={{ marginBottom: '1.25rem' }}>
+            <GoogleAuthButton
+              buttonText="Continue with Google"
+              onSuccess={handleGoogleSuccess}
+              onError={(err) => setErrorMessage(err)}
+            />
+            {!isGoogleAuthConfigured && (
               <div
                 style={{
+                  marginTop: '0.65rem',
+                  padding: '0.6rem 0.85rem',
+                  backgroundColor: '#F8FAFC',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '10px',
+                  color: '#64748B',
+                  fontSize: '0.75rem',
                   display: 'flex',
                   alignItems: 'center',
-                  margin: '1.5rem 0',
+                  gap: '0.5rem',
+                  lineHeight: 1.45,
                 }}
+                role="status"
               >
-                <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
-                <span
-                  style={{
-                    padding: '0 0.85rem',
-                    fontSize: '0.72rem',
-                    color: '#94A3B8',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.04em',
-                    fontWeight: 600,
-                  }}
-                >
-                  Or continue with
+                <AlertCircle size={15} style={{ flexShrink: 0, color: '#94A3B8' }} />
+                <span>
+                  Google OAuth is not configured. Add <code>VITE_GOOGLE_CLIENT_ID</code> to your environment to enable single sign-on.
                 </span>
-                <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
               </div>
-
-              <div style={{ marginBottom: '1.25rem' }}>
-                <GoogleAuthButton
-                  buttonText="Sign in with Google"
-                  onError={(err) => setErrorMessage(err)}
-                />
-              </div>
-            </>
-          )}
+            )}
+          </div>
 
           {/* Account Footer */}
           <div
@@ -922,8 +955,7 @@ export const SignInPage: React.FC = () => {
               paddingTop: '1.25rem',
               fontSize: '0.8125rem',
               color: '#66748B',
-              marginTop: isGoogleAuthConfigured ? '0' : '1.25rem',
-              borderTop: isGoogleAuthConfigured ? 'none' : '1px solid #E2E8F0',
+              borderTop: '1px solid #E2E8F0',
             }}
           >
             New to ACRM?{' '}

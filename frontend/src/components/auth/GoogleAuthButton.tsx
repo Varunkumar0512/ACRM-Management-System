@@ -21,7 +21,7 @@ declare global {
 
 interface GoogleAuthButtonProps {
   buttonText?: string;
-  onSuccess?: () => void;
+  onSuccess?: (authData?: any) => void;
   onError?: (errorMsg: string) => void;
 }
 
@@ -35,6 +35,7 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isGisRendered, setIsGisRendered] = useState(false);
 
   // Secure Account Linking Modal State
   const [isLinkingModalOpen, setIsLinkingModalOpen] = useState(false);
@@ -46,7 +47,13 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
   const [linkingError, setLinkingError] = useState<string | null>(null);
 
   const googleButtonContainerRef = useRef<HTMLDivElement>(null);
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+  const clientId = (import.meta.env.VITE_GOOGLE_CLIENT_ID || '').trim();
+  const isConfigured = Boolean(
+    clientId &&
+    clientId !== '' &&
+    !clientId.includes('your_google_client_id') &&
+    !clientId.includes('your-google-client-id')
+  );
 
   // Process credential response from Google Identity Services
   const handleCredentialResponse = async (idToken: string, explicitPassword?: string) => {
@@ -69,15 +76,15 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
       }
 
       if (onSuccess) {
-        onSuccess();
+        onSuccess(data);
       } else {
-        const targetRole = data?.user?.role;
+        const targetRole = (data?.user?.role || '').toUpperCase();
         if (targetRole === 'FACULTY') {
           navigate('/faculty/dashboard');
         } else if (targetRole === 'ADMIN') {
           navigate('/admin/dashboard');
         } else {
-          navigate('/dashboard');
+          navigate('/student/dashboard');
         }
       }
     } catch (err: any) {
@@ -108,7 +115,7 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
 
   // Initialize GIS SDK
   useEffect(() => {
-    if (!clientId) return;
+    if (!isConfigured) return;
 
     const interval = setInterval(() => {
       if (window.google?.accounts?.id) {
@@ -136,6 +143,11 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
               logo_alignment: 'left',
               width: 380,
             });
+            setTimeout(() => {
+              if (googleButtonContainerRef.current?.hasChildNodes()) {
+                setIsGisRendered(true);
+              }
+            }, 100);
           }
         } catch (e) {
           console.warn('GIS initialization error:', e);
@@ -144,14 +156,14 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
     }, 100);
 
     return () => clearInterval(interval);
-  }, [clientId]);
+  }, [clientId, isConfigured]);
 
   // Click handler for custom branded button
   const handleCustomButtonClick = () => {
-    if (!clientId) {
-      setErrorMessage(
-        'Google Client ID is not configured. Please add VITE_GOOGLE_CLIENT_ID to your environment variables.'
-      );
+    if (!isConfigured) {
+      const msg = 'Google OAuth is not configured. Please add VITE_GOOGLE_CLIENT_ID to your environment variables.';
+      setErrorMessage(msg);
+      if (onError) onError(msg);
       return;
     }
 
@@ -163,14 +175,15 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
       window.google.accounts.id.prompt((notification: any) => {
         if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
           setIsLoading(false);
-          // If prompt was skipped or not displayed, simulate or show instruction
-          if (notification.getNotDisplayedReason() === 'suppressed_by_user') {
+          // If prompt was skipped or not displayed, show instruction
+          const reason = typeof notification.getNotDisplayedReason === 'function' ? notification.getNotDisplayedReason() : '';
+          if (reason === 'suppressed_by_user') {
             setErrorMessage('Google One Tap was dismissed. Please use institutional email sign-in or enable popups.');
           }
         }
       });
     } else {
-      setErrorMessage('Google authentication service is loading. Please try again in a moment.');
+      setErrorMessage('Google authentication service is loading. Please check your network connection or use institutional email.');
     }
   };
 
@@ -206,19 +219,20 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
         </div>
       )}
 
-      {/* Hidden GIS container for official script rendering */}
+      {/* GIS container for official script rendering */}
       <div
         ref={googleButtonContainerRef}
         style={{
-          display: clientId ? 'flex' : 'none',
+          display: isGisRendered ? 'flex' : 'none',
           justifyContent: 'center',
-          marginBottom: '0.5rem',
+          width: '100%',
           minHeight: '44px',
+          marginBottom: isGisRendered ? '0.5rem' : '0',
         }}
       />
 
       {/* Custom High-Quality Google Button for Seamless Aesthetic Integration */}
-      {(!clientId || !googleButtonContainerRef.current?.hasChildNodes()) && (
+      {!isGisRendered && (
         <button
           type="button"
           onClick={handleCustomButtonClick}
@@ -226,7 +240,7 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
           aria-label={buttonText}
           style={{
             width: '100%',
-            height: '48px',
+            height: '44px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -235,7 +249,7 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
             border: '1px solid #CBD5E1',
             borderRadius: '10px',
             color: '#1E293B',
-            fontSize: '0.9375rem',
+            fontSize: '0.875rem',
             fontWeight: 600,
             cursor: isLoading ? 'not-allowed' : 'pointer',
             transition: 'all 0.2s ease',
