@@ -20,6 +20,7 @@ router.use(requireRoles(UserRole.ADMIN));
 router.get('/analytics', adminController.getAnalytics);
 router.get('/users', adminController.listUsers);
 router.patch('/users/:id/toggle-status', adminController.toggleUserStatus);
+router.patch('/users/:id/role', adminController.updateUserRole);
 router.patch('/users/:id/faculty', adminController.updateFaculty);
 router.get('/audit-logs', adminController.getAuditLogs);
 

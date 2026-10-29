@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { projectController } from '../controllers/ProjectController.js';
 import { authenticateUser } from '../middleware/auth.js';
+import { requireRoles } from '../middleware/rbac.js';
+import { UserRole } from '../config/constants.js';
 import { validateBody } from '../middleware/validate.js';
 import {
   createProjectSchema,
@@ -32,11 +34,11 @@ router.delete('/:id/milestones/:milestoneId', projectController.deleteMilestone)
 router.post('/:id/comments', validateBody(createCommentSchema), projectController.addComment);
 router.patch('/:id/comments/:commentId/resolve', projectController.resolveComment);
 
-// Reviews
-router.post('/:id/reviews', validateBody(createReviewSchema), projectController.submitReview);
+// Reviews (Faculty guides or Administrator only)
+router.post('/:id/reviews', requireRoles(UserRole.FACULTY, UserRole.ADMIN), validateBody(createReviewSchema), projectController.submitReview);
 
-// Faculty guidance response
-router.post('/:id/guide/respond', validateBody(respondGuideSchema), projectController.respondToGuideRequest);
+// Faculty guidance response (Faculty guides or Administrator only)
+router.post('/:id/guide/respond', requireRoles(UserRole.FACULTY, UserRole.ADMIN), validateBody(respondGuideSchema), projectController.respondToGuideRequest);
 
 // Documents metadata
 router.post('/:id/documents', projectController.addDocumentMetadata);

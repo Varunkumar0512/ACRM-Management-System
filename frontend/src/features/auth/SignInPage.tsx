@@ -11,6 +11,8 @@ import {
   ArrowRight,
   ShieldCheck,
   CheckCircle2,
+  GraduationCap,
+  BookOpen,
 } from 'lucide-react';
 import { GoogleAuthButton } from '../../components/auth/GoogleAuthButton';
 
@@ -18,6 +20,7 @@ export const SignInPage: React.FC = () => {
   const { signIn } = useAuth();
   const navigate = useNavigate();
 
+  const [selectedRole, setSelectedRole] = useState<'STUDENT' | 'FACULTY' | 'ADMIN'>('STUDENT');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -26,6 +29,24 @@ export const SignInPage: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+
+  // Quick fill demo credentials for seamless testing of each role
+  const handleQuickFill = (role: 'STUDENT' | 'FACULTY' | 'ADMIN') => {
+    setSelectedRole(role);
+    if (role === 'STUDENT') {
+      setEmail('student@university.edu');
+      setPassword('Password123!');
+    } else if (role === 'FACULTY') {
+      setEmail('faculty@university.edu');
+      setPassword('Password123!');
+    } else {
+      setEmail('admin@university.edu');
+      setPassword('AdminSecret123!');
+    }
+    setEmailError(null);
+    setPasswordError(null);
+    setErrorMessage(null);
+  };
 
   // Check if Google OAuth client ID is configured and functional
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
@@ -68,8 +89,18 @@ export const SignInPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      await signIn({ email: email.trim(), password, rememberMe });
-      navigate('/dashboard');
+      // Backend validates credentials and fetches the user's assigned role from database
+      const authResult = await signIn({ email: email.trim(), password, rememberMe });
+      
+      // Determine redirect strictly using the authenticated user's role returned by backend
+      const backendRole = (authResult?.user?.role || '').toUpperCase();
+      if (backendRole === 'ADMIN') {
+        navigate('/admin/dashboard', { replace: true });
+      } else if (backendRole === 'FACULTY') {
+        navigate('/faculty/dashboard', { replace: true });
+      } else {
+        navigate('/student/dashboard', { replace: true });
+      }
     } catch (err: any) {
       const serverMsg = err.response?.data?.error?.message;
       setErrorMessage(
@@ -461,7 +492,7 @@ export const SignInPage: React.FC = () => {
           }}
         >
           {/* Header */}
-          <div style={{ marginBottom: '2rem' }}>
+          <div style={{ marginBottom: '1.75rem' }}>
             <h2
               style={{
                 fontFamily: 'var(--font-display)',
@@ -484,6 +515,123 @@ export const SignInPage: React.FC = () => {
             >
               Sign in to continue to your research workspace.
             </p>
+          </div>
+
+          {/* Role Selector Header */}
+          <div style={{ marginBottom: '1.5rem' }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '0.45rem',
+              }}
+            >
+              <label
+                style={{
+                  fontSize: '0.8125rem',
+                  fontWeight: 600,
+                  color: '#172033',
+                }}
+              >
+                Account Role
+              </label>
+              <span
+                style={{
+                  fontSize: '0.72rem',
+                  color: '#64748B',
+                }}
+              >
+                Auto-assigned from record
+              </span>
+            </div>
+
+            <div
+              role="tablist"
+              aria-label="Select institutional role"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '0.35rem',
+                padding: '0.3rem',
+                backgroundColor: '#F1F5F9',
+                borderRadius: '12px',
+                border: '1px solid #E2E8F0',
+              }}
+            >
+              {[
+                { id: 'STUDENT', label: 'Student', icon: GraduationCap },
+                { id: 'FACULTY', label: 'Faculty', icon: BookOpen },
+                { id: 'ADMIN', label: 'Admin', icon: ShieldCheck },
+              ].map((r) => {
+                const isSelected = selectedRole === r.id;
+                const IconComp = r.icon;
+                return (
+                  <button
+                    key={r.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isSelected}
+                    onClick={() => {
+                      setSelectedRole(r.id as any);
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.45rem',
+                      padding: '0.65rem 0.5rem',
+                      borderRadius: '9px',
+                      border: isSelected ? '1px solid #4268E8' : '1px solid transparent',
+                      backgroundColor: isSelected ? '#FFFFFF' : 'transparent',
+                      color: isSelected ? '#4268E8' : '#64748B',
+                      fontWeight: isSelected ? 700 : 500,
+                      fontSize: '0.8125rem',
+                      cursor: 'pointer',
+                      boxShadow: isSelected ? '0 2px 6px rgba(66, 104, 232, 0.12)' : 'none',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    <IconComp size={15} color={isSelected ? '#4268E8' : '#64748B'} />
+                    <span>{r.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Quick-fill helper */}
+            <div
+              style={{
+                marginTop: '0.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                fontSize: '0.75rem',
+                color: '#64748B',
+              }}
+            >
+              <span>
+                {selectedRole === 'STUDENT' && 'Alex Rivera · Student Scholar'}
+                {selectedRole === 'FACULTY' && 'Dr. Eleanor Vance · Associate Professor'}
+                {selectedRole === 'ADMIN' && 'System Administrator & Dean'}
+              </span>
+              <button
+                type="button"
+                onClick={() => handleQuickFill(selectedRole)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#4268E8',
+                  fontWeight: 600,
+                  fontSize: '0.72rem',
+                  cursor: 'pointer',
+                  padding: 0,
+                  textDecoration: 'underline',
+                }}
+              >
+                Use {selectedRole === 'STUDENT' ? 'Student' : selectedRole === 'FACULTY' ? 'Faculty' : 'Admin'} credentials
+              </button>
+            </div>
           </div>
 
           {/* Form-Level Error Message */}
@@ -529,7 +677,13 @@ export const SignInPage: React.FC = () => {
                 id="signin-email"
                 type="email"
                 className="acr-input"
-                placeholder="you@institution.edu"
+                placeholder={
+                  selectedRole === 'STUDENT'
+                    ? 'student@university.edu'
+                    : selectedRole === 'FACULTY'
+                    ? 'faculty@university.edu'
+                    : 'admin@university.edu'
+                }
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);

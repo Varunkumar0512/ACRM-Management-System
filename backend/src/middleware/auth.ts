@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyAccessToken } from '../utils/tokens.js';
-import { UnauthorizedError } from '../errors/AppError.js';
+import { UnauthorizedError, ForbiddenError } from '../errors/AppError.js';
 import { userRepository } from '../repositories/UserRepository.js';
+import { UserRole } from '../config/constants.js';
 
 export async function authenticateUser(
   req: Request,
@@ -34,10 +35,16 @@ export async function authenticateUser(
       throw new UnauthorizedError('User account has been disabled. Please contact the administrator.');
     }
 
+    // Ensure every authenticated user has a strictly validated role
+    const normalizedRole = ((user.role || '') as string).toUpperCase() as UserRole;
+    if (!normalizedRole || !Object.values(UserRole).includes(normalizedRole)) {
+      throw new ForbiddenError('Account is missing a valid institutional role. Contact administrator.');
+    }
+
     req.user = {
       userId: user._id.toString(),
       email: user.email,
-      role: user.role,
+      role: normalizedRole,
       fullName: user.fullName,
     };
 
@@ -71,12 +78,15 @@ export async function optionalAuthenticateUser(
       const payload = verifyAccessToken(token);
       const user = await userRepository.findById(payload.userId);
       if (user && user.isActive) {
-        req.user = {
-          userId: user._id.toString(),
-          email: user.email,
-          role: user.role,
-          fullName: user.fullName,
-        };
+        const normalizedRole = ((user.role || '') as string).toUpperCase() as UserRole;
+        if (Object.values(UserRole).includes(normalizedRole)) {
+          req.user = {
+            userId: user._id.toString(),
+            email: user.email,
+            role: normalizedRole,
+            fullName: user.fullName,
+          };
+        }
       }
     }
     next();

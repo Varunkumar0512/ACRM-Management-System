@@ -60,6 +60,11 @@ export const adminApi = {
     return res.data.data;
   },
 
+  updateUserRole: async (id: string, role: string) => {
+    const res = await apiClient.patch(`/admin/users/${id}/role`, { role });
+    return res.data.data;
+  },
+
   getAuditLogs: async (params?: any) => {
     const res = await apiClient.get('/admin/audit-logs', { params });
     return res.data.data;

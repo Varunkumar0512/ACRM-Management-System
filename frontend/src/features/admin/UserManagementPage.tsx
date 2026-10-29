@@ -6,7 +6,7 @@ import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { useToast } from '../../hooks/useToast';
 import { Tabs } from '../../components/ui/Tabs';
-import { Search, UserCheck, UserX, Edit2, ShieldAlert } from 'lucide-react';
+import { Search, UserCheck, UserX, Edit2, ShieldAlert, Shield } from 'lucide-react';
 import { PageHeader } from '../../components/dashboard';
 
 export const UserManagementPage: React.FC = () => {
@@ -21,6 +21,11 @@ export const UserManagementPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editDesignation, setEditDesignation] = useState('');
   const [editDepartment, setEditDepartment] = useState('');
+
+  // Role Assignment Modal
+  const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
+  const [targetUserForRole, setTargetUserForRole] = useState<any>(null);
+  const [selectedNewRole, setSelectedNewRole] = useState<'STUDENT' | 'FACULTY' | 'ADMIN'>('STUDENT');
 
   // Confirmation Modal
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -74,6 +79,26 @@ export const UserManagementPage: React.FC = () => {
       loadUsers();
     } catch (err: any) {
       toast.error(err.response?.data?.error?.message || 'Failed to update faculty record.');
+    }
+  };
+
+  const handleOpenRoleModal = (item: any) => {
+    setTargetUserForRole(item.user);
+    setSelectedNewRole(item.user.role);
+    setIsRoleModalOpen(true);
+  };
+
+  const handleSaveRole = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!targetUserForRole) return;
+    try {
+      await adminApi.updateUserRole(targetUserForRole._id, selectedNewRole);
+      toast.success(`Role for ${targetUserForRole.fullName} updated to ${selectedNewRole}.`);
+      setIsRoleModalOpen(false);
+      setTargetUserForRole(null);
+      loadUsers();
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message || 'Failed to update user role.');
     }
   };
 
@@ -180,6 +205,16 @@ export const UserManagementPage: React.FC = () => {
                         <Button
                           variant="ghost"
                           size="sm"
+                          onClick={() => handleOpenRoleModal(item)}
+                          title="Assign or modify account role"
+                          icon={<Shield size={14} />}
+                        >
+                          Role
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           style={{ color: u.isActive ? '#dc2626' : '#059669' }}
                           onClick={() => {
                             setTargetUserToToggle(u);
@@ -267,6 +302,83 @@ export const UserManagementPage: React.FC = () => {
             </Button>
           </div>
         </div>
+      </Modal>
+
+      {/* Role Assignment & Governance Modal */}
+      <Modal isOpen={isRoleModalOpen} onClose={() => setIsRoleModalOpen(false)} title="Assign or Update Account Role">
+        <form onSubmit={handleSaveRole}>
+          <div style={{ marginBottom: '1rem' }}>
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '1rem', lineHeight: 1.5 }}>
+              Modify institutional role and authorization scope for{' '}
+              <strong>{targetUserForRole?.fullName}</strong> ({targetUserForRole?.email}).
+            </p>
+
+            <label className="acr-label">Institutional Access Role</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginTop: '0.5rem' }}>
+              {[
+                {
+                  id: 'STUDENT',
+                  label: 'Student Scholar',
+                  desc: 'Can manage own projects, submit deliverables, and request faculty mentors.',
+                },
+                {
+                  id: 'FACULTY',
+                  label: 'Faculty Mentor',
+                  desc: 'Can review student submissions, provide formal scoring, and guide research.',
+                },
+                {
+                  id: 'ADMIN',
+                  label: 'Institutional Administrator',
+                  desc: 'Full administrative access: user governance, taxonomy control, and audit oversight.',
+                },
+              ].map((r) => {
+                const isSelected = selectedNewRole === r.id;
+                return (
+                  <label
+                    key={r.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '0.75rem',
+                      padding: '0.85rem',
+                      borderRadius: '10px',
+                      border: isSelected ? '2px solid #4268E8' : '1px solid var(--border-default)',
+                      backgroundColor: isSelected ? 'rgba(66, 104, 232, 0.05)' : 'var(--bg-card)',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="accountRole"
+                      value={r.id}
+                      checked={isSelected}
+                      onChange={() => setSelectedNewRole(r.id as any)}
+                      style={{ marginTop: '0.2rem', accentColor: '#4268E8' }}
+                    />
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--text-primary)' }}>
+                        {r.label}
+                      </div>
+                      <div style={{ fontSize: '0.775rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>
+                        {r.desc}
+                      </div>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1.5rem' }}>
+            <Button variant="secondary" onClick={() => setIsRoleModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary">
+              Save Role Assignment
+            </Button>
+          </div>
+        </form>
       </Modal>
     </div>
   );

@@ -39,12 +39,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   if (!user) return null;
 
+  const currentRole = ((user.role || '') as string).toUpperCase();
+
   const dashboardRoute =
-    user.role === 'FACULTY'
+    currentRole === 'FACULTY'
       ? '/faculty/dashboard'
-      : user.role === 'ADMIN'
+      : currentRole === 'ADMIN'
       ? '/admin/dashboard'
-      : '/dashboard';
+      : '/student/dashboard';
 
   const linkStyle = ({ isActive }: { isActive: boolean }) => ({
     display: 'flex',

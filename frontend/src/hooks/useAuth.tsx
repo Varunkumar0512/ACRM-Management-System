@@ -7,9 +7,9 @@ interface AuthContextType {
   profile: any;
   isLoading: boolean;
   isAuthenticated: boolean;
-  signIn: (credentials: any) => Promise<void>;
-  signUpStudent: (data: any) => Promise<void>;
-  signUpFaculty: (data: any) => Promise<void>;
+  signIn: (credentials: any) => Promise<any>;
+  signUpStudent: (data: any) => Promise<any>;
+  signUpFaculty: (data: any) => Promise<any>;
   signOut: () => Promise<void>;
   reloadUser: () => Promise<void>;
   signInWithGoogle: (idToken: string, linkPassword?: string) => Promise<any>;
@@ -43,6 +43,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const data = await authApi.signIn(credentials);
     setUser(data.user);
     setProfile(data.profile);
+    return data;
   };
 
   const signInWithGoogle = async (idToken: string, linkPassword?: string) => {
@@ -56,12 +57,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const data = await authApi.signUpStudent(formData);
     setUser(data.user);
     setProfile(data.profile);
+    return data;
   };
 
   const signUpFaculty = async (formData: any) => {
     const data = await authApi.signUpFaculty(formData);
     setUser(data.user);
     setProfile(data.profile);
+    return data;
   };
 
   const signOut = async () => {

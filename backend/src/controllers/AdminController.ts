@@ -67,6 +67,20 @@ export class AdminController {
     }
   };
 
+  updateUserRole = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { role } = req.body;
+      const user = await adminService.updateUserRole(req.params.id, role, req.user!.userId);
+
+      res.status(200).json({
+        success: true,
+        data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   getAuditLogs = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { action, userId, skip, limit } = req.query;

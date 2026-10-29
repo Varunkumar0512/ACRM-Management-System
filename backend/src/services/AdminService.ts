@@ -121,6 +121,65 @@ export class AdminService {
     return updated;
   }
 
+  async updateUserRole(targetUserId: string, newRoleInput: string, adminUserId: string) {
+    const user = await userRepository.findById(targetUserId);
+    if (!user) throw new NotFoundError('User not found.');
+
+    const normalizedRole = (newRoleInput || '').toUpperCase() as UserRole;
+    if (!Object.values(UserRole).includes(normalizedRole)) {
+      throw new BadRequestError(`Invalid role: ${newRoleInput}. Allowed roles: [STUDENT, FACULTY, ADMIN]`);
+    }
+
+    if (user._id.toString() === adminUserId && normalizedRole !== UserRole.ADMIN) {
+      throw new BadRequestError('Administrators cannot demote their own account role.');
+    }
+
+    const previousRole = user.role;
+    user.role = normalizedRole;
+    await user.save();
+
+    // Ensure corresponding profile exists
+    if (normalizedRole === UserRole.FACULTY) {
+      const existingProfile = await facultyProfileRepository.findByUserId(user._id);
+      if (!existingProfile) {
+        await facultyProfileRepository.create({
+          userId: user._id,
+          employeeId: `FAC-${Date.now().toString().slice(-6)}`,
+          designation: 'Associate Professor' as any,
+          department: 'Computer Science & Engineering',
+          experienceYears: 5,
+          areasOfExpertise: ['Academic Research'],
+          currentResearchSummary: 'Institutional faculty research supervision',
+          maxActiveProjectsGuide: 6,
+          currentActiveProjectsCount: 0,
+          isAvailableForGuidance: true,
+        });
+      }
+    } else if (normalizedRole === UserRole.STUDENT) {
+      const existingProfile = await studentProfileRepository.findByUserId(user._id);
+      if (!existingProfile) {
+        await studentProfileRepository.create({
+          userId: user._id,
+          studentId: `STU-${Date.now().toString().slice(-6)}`,
+          department: 'Computer Science & Engineering',
+          program: 'Undergraduate Research Program',
+          yearOfStudy: 1,
+          researchInterests: [],
+        });
+      }
+    }
+
+    await auditLogRepository.log({
+      userId: adminUserId,
+      action: AuditAction.USER_ROLE_ASSIGNED,
+      resourceType: 'User',
+      resourceId: user._id.toString(),
+      details: { email: user.email, previousRole, newRole: normalizedRole },
+    });
+
+    return user;
+  }
+
   async getAuditLogs(query: { action?: string; userId?: string; skip?: number; limit?: number }) {
     const filter: Record<string, unknown> = {};
     if (query.action) filter.action = query.action;

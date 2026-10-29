@@ -34,13 +34,15 @@ import { IprReviewsPage } from '../features/ipr/IprReviewsPage';
 import { IprDocumentsPage } from '../features/ipr/IprDocumentsPage';
 import { IprActivityPage } from '../features/ipr/IprActivityPage';
 import { useAuth } from '../hooks/useAuth';
+import { RequireRole } from '../components/auth/RequireRole';
 
 // Role-aware Dashboard Switcher
 const RoleDashboardRouter: React.FC = () => {
   const { user } = useAuth();
-  if (user?.role === 'FACULTY') return <Navigate to="/faculty/dashboard" replace />;
-  if (user?.role === 'ADMIN') return <Navigate to="/admin/dashboard" replace />;
-  return <StudentDashboard />;
+  const role = user?.role?.toUpperCase();
+  if (role === 'FACULTY') return <Navigate to="/faculty/dashboard" replace />;
+  if (role === 'ADMIN') return <Navigate to="/admin/dashboard" replace />;
+  return <Navigate to="/student/dashboard" replace />;
 };
 
 export const router = createBrowserRouter([
@@ -77,6 +79,15 @@ export const router = createBrowserRouter([
       {
         path: '/dashboard',
         element: <RoleDashboardRouter />,
+      },
+      // Student Dashboard
+      {
+        path: '/student/dashboard',
+        element: (
+          <RequireRole allowedRoles={['STUDENT']}>
+            <StudentDashboard />
+          </RequireRole>
+        ),
       },
       // Research discovery
       {
@@ -119,24 +130,44 @@ export const router = createBrowserRouter([
       },
       {
         path: '/faculty/dashboard',
-        element: <FacultyDashboard />,
+        element: (
+          <RequireRole allowedRoles={['FACULTY']}>
+            <FacultyDashboard />
+          </RequireRole>
+        ),
       },
-      // Admin
+      // Admin Governance
       {
         path: '/admin/dashboard',
-        element: <AdminDashboard />,
+        element: (
+          <RequireRole allowedRoles={['ADMIN']}>
+            <AdminDashboard />
+          </RequireRole>
+        ),
       },
       {
         path: '/admin/users',
-        element: <UserManagementPage />,
+        element: (
+          <RequireRole allowedRoles={['ADMIN']}>
+            <UserManagementPage />
+          </RequireRole>
+        ),
       },
       {
         path: '/admin/taxonomy',
-        element: <ResearchTaxonomyPage />,
+        element: (
+          <RequireRole allowedRoles={['ADMIN']}>
+            <ResearchTaxonomyPage />
+          </RequireRole>
+        ),
       },
       {
         path: '/admin/audit-logs',
-        element: <AuditLogsPage />,
+        element: (
+          <RequireRole allowedRoles={['ADMIN']}>
+            <AuditLogsPage />
+          </RequireRole>
+        ),
       },
       // IPR & Innovation Module
       {
@@ -169,7 +200,11 @@ export const router = createBrowserRouter([
       },
       {
         path: '/ipr/reviews',
-        element: <IprReviewsPage />,
+        element: (
+          <RequireRole allowedRoles={['FACULTY', 'ADMIN']}>
+            <IprReviewsPage />
+          </RequireRole>
+        ),
       },
       {
         path: '/ipr/documents',

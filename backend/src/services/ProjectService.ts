@@ -4,7 +4,7 @@ import { studentProfileRepository } from '../repositories/StudentProfileReposito
 import { facultyProfileRepository } from '../repositories/FacultyProfileRepository.js';
 import { notificationRepository } from '../repositories/NotificationRepository.js';
 import { auditLogRepository } from '../repositories/AuditLogRepository.js';
-import { IProject } from '../models/Project.js';
+import { IProject, Project } from '../models/Project.js';
 import { ProjectStatus, MilestoneStatus, NotificationType, AuditAction, UserRole, ReviewDecision, GuideRole } from '../config/constants.js';
 import { BadRequestError, ForbiddenError, NotFoundError } from '../errors/AppError.js';
 import mongoose from 'mongoose';
@@ -27,8 +27,13 @@ export class ProjectService {
   async generateProjectCode(): Promise<string> {
     const year = new Date().getFullYear();
     const count = await projectRepository.list({}, 0, 1);
-    const num = (count.total + 1).toString().padStart(3, '0');
-    return `PRJ-${year}-${num}`;
+    let nextNum = count.total + 1;
+    let code = `PRJ-${year}-${nextNum.toString().padStart(3, '0')}`;
+    while (await Project.exists({ code })) {
+      nextNum += 1;
+      code = `PRJ-${year}-${nextNum.toString().padStart(3, '0')}`;
+    }
+    return code;
   }
 
   async createProject(userId: string, data: any): Promise<IProject> {
