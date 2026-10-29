@@ -48,3 +48,12 @@ export class ValidationError extends AppError {
     super(message, 422, 'VALIDATION_ERROR', details);
   }
 }
+
+export class AccountLinkingRequiredError extends AppError {
+  constructor(
+    message = 'An existing account with this institutional email was found. Please enter your existing password to link your Google identity.',
+    email?: string
+  ) {
+    super(message, 409, 'ACCOUNT_LINKING_REQUIRED', { email });
+  }
+}

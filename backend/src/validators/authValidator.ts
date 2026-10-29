@@ -54,10 +54,15 @@ export const resetPasswordSchema = z.object({
 });
 
 export const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1, 'Current password is required'),
+  currentPassword: z.string().optional(),
   newPassword: z
     .string()
     .min(8, 'New password must be at least 8 characters long')
     .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
     .regex(/[0-9]/, 'Password must contain at least one number'),
+});
+
+export const googleAuthSchema = z.object({
+  idToken: z.string().min(10, 'Valid Google ID token is required'),
+  linkPassword: z.string().optional(),
 });

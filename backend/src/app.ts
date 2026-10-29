@@ -40,8 +40,9 @@ export function createApp(): Express {
   // General rate limiting
   app.use('/api/', apiRateLimiter);
 
-  // API Router
+  // API Router (supporting both /api/v1 and standard /api routes)
   app.use('/api/v1', apiRouter);
+  app.use('/api', apiRouter);
 
   // 404 Fallback
   app.use((req, _res, next) => {

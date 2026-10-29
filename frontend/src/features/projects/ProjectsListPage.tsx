@@ -9,6 +9,8 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { Tabs } from '../../components/ui/Tabs';
 import { PlusCircle, Search, FolderGit2, ArrowRight } from 'lucide-react';
 
+import { PageHeader } from '../../components/dashboard';
+
 export const ProjectsListPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const filterParam = searchParams.get('filter') || 'my';
@@ -54,29 +56,21 @@ export const ProjectsListPage: React.FC = () => {
 
   return (
     <div>
-      <Breadcrumbs
-        items={[
+      <PageHeader
+        title="Academic Research Projects"
+        subtitle="Track research charters, milestone velocity, and faculty mentor evaluations."
+        breadcrumbs={[
           { label: 'Dashboard', path: '/dashboard' },
           { label: 'Projects' },
-          { label: 'Academic Projects Directory' },
+          { label: 'Academic Directory' },
         ]}
+        actions={
+          <Link to="/projects/create" className="acr-btn acr-btn-primary">
+            <PlusCircle size={15} />
+            <span>Create Project</span>
+          </Link>
+        }
       />
-
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-            Academic Projects Workspace
-          </h1>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-            Track project lifecycle milestones, faculty mentor reviews, and collaborative deliverables
-          </p>
-        </div>
-
-        <Link to="/projects/create" className="acr-btn acr-btn-primary">
-          <PlusCircle size={16} />
-          <span>Create Project</span>
-        </Link>
-      </div>
 
       <Tabs
         tabs={[
@@ -121,8 +115,8 @@ export const ProjectsListPage: React.FC = () => {
       ) : projects.length === 0 ? (
         <EmptyState
           title="No projects found"
-          description="There are currently no research projects matching your filter."
-          actionLabel="Create New Project"
+          description="No projects yet matching your criteria. Create your first project to get started."
+          actionLabel="Create Project"
           onAction={() => (window.location.href = '/projects/create')}
         />
       ) : (

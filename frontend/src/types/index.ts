@@ -49,6 +49,7 @@ export interface IUser {
   phone?: string;
   isActive: boolean;
   isEmailVerified: boolean;
+  googleId?: string;
   createdAt?: string;
 }
 

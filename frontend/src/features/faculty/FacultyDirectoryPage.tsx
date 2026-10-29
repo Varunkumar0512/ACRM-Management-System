@@ -7,6 +7,8 @@ import { Button } from '../../components/ui/Button';
 import { Search, GraduationCap, Mail, MapPin, ExternalLink, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import { PageHeader } from '../../components/dashboard';
+
 export const FacultyDirectoryPage: React.FC = () => {
   const [facultyList, setFacultyList] = useState<IFacultyProfile[]>([]);
   const [selectedDepartment, setSelectedDepartment] = useState('');
@@ -27,23 +29,15 @@ export const FacultyDirectoryPage: React.FC = () => {
 
   return (
     <div>
-      <Breadcrumbs
-        items={[
+      <PageHeader
+        title="Faculty Mentors & Research Guides"
+        subtitle="Verified institutional faculty profiles, academic designations, areas of expertise, and guidance capacities"
+        breadcrumbs={[
           { label: 'Dashboard', path: '/dashboard' },
-          { label: 'Faculty Directory & Mentors' },
+          { label: 'Mentorship' },
+          { label: 'Faculty Directory' },
         ]}
       />
-
-      <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-            Faculty Mentors & Research Guides
-          </h1>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-            Verified institutional faculty profiles, academic designations, areas of expertise, and guidance capacities
-          </p>
-        </div>
-      </div>
 
       {/* Filters */}
       <div className="acr-card" style={{ padding: '1rem', marginBottom: '1.5rem' }}>

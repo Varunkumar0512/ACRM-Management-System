@@ -52,3 +52,35 @@ export async function authenticateUser(
     }
   }
 }
+
+export async function optionalAuthenticateUser(
+  req: Request,
+  _res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    let token: string | undefined;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    } else if (req.cookies && req.cookies.accessToken) {
+      token = req.cookies.accessToken;
+    }
+
+    if (token) {
+      const payload = verifyAccessToken(token);
+      const user = await userRepository.findById(payload.userId);
+      if (user && user.isActive) {
+        req.user = {
+          userId: user._id.toString(),
+          email: user.email,
+          role: user.role,
+          fullName: user.fullName,
+        };
+      }
+    }
+    next();
+  } catch {
+    next();
+  }
+}

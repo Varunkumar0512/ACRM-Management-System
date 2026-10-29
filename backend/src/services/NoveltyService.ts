@@ -2,9 +2,10 @@ import { noveltyRepository } from '../repositories/NoveltyRepository.js';
 import { projectRepository } from '../repositories/ProjectRepository.js';
 import { ResearchPaper } from '../models/ResearchPaper.js';
 import { Project } from '../models/Project.js';
-import { NoveltyAssessment, NoveltyConfidence, AuditAction } from '../config/constants.js';
+import { NoveltyAssessment, NoveltyConfidence, AuditAction, UserRole } from '../config/constants.js';
 import { auditLogRepository } from '../repositories/AuditLogRepository.js';
-import { BadRequestError, NotFoundError } from '../errors/AppError.js';
+import { BadRequestError, NotFoundError, ForbiddenError } from '../errors/AppError.js';
+import { verifyProjectAccess } from '../utils/projectAuth.js';
 import mongoose from 'mongoose';
 
 export interface NoveltyAnalysisOutput {
@@ -45,12 +46,10 @@ export class NoveltyService {
       technologiesUsed: string[];
       targetApplication: string;
       relatedResearch?: string;
-    }
+    },
+    userRole: UserRole = UserRole.STUDENT
   ): Promise<any> {
-    const project = await projectRepository.findById(data.projectId);
-    if (!project) {
-      throw new NotFoundError('Referenced project workspace not found.');
-    }
+    const { project } = await verifyProjectAccess(data.projectId, userId, userRole, true);
 
     // Step 1: Query actual local institutional repository (Research papers & Projects)
     // Extract search keywords from title, technologies, and features
@@ -232,8 +231,10 @@ export class NoveltyService {
       screeningId?: string;
       message: string;
       innovationContext?: any;
-    }
+    },
+    userRole: UserRole = UserRole.STUDENT
   ): Promise<{ response: string; timestamp: Date }> {
+    await verifyProjectAccess(data.projectId, userId, userRole, false);
     const userMsg = data.message.trim().toLowerCase();
 
     // Contextual challenging responses that push the user to detail technical distinctions
@@ -260,6 +261,13 @@ export class NoveltyService {
     if (data.screeningId) {
       const screening = await noveltyRepository.findById(data.screeningId);
       if (screening) {
+        const pId = screening.projectId?._id
+          ? screening.projectId._id.toString()
+          : screening.projectId?.toString();
+        if (pId) {
+          await verifyProjectAccess(pId, userId, userRole || UserRole.STUDENT, false);
+        }
+
         screening.chatHistory.push({
           role: 'user',
           content: data.message,
@@ -283,10 +291,26 @@ export class NoveltyService {
   /**
    * Student acknowledges preliminary novelty disclaimer before proceeding to IPR disclosure.
    */
-  async acknowledgeScreening(screeningId: string, userId: string): Promise<any> {
+  async acknowledgeScreening(
+    screeningId: string,
+    userId: string,
+    userRole: UserRole = UserRole.STUDENT
+  ): Promise<any> {
     const screening = await noveltyRepository.findById(screeningId);
     if (!screening) {
       throw new NotFoundError('Novelty screening record not found.');
+    }
+
+    const pId = screening.projectId?._id
+      ? screening.projectId._id.toString()
+      : screening.projectId?.toString();
+    if (pId) {
+      const access = await verifyProjectAccess(pId, userId, userRole, false);
+      if (!access.isOwner && !access.isMember && !access.isAdmin) {
+        throw new ForbiddenError(
+          'Only project owners, team members, or administrators can acknowledge novelty screenings.'
+        );
+      }
     }
 
     screening.studentAcknowledged = true;
@@ -299,17 +323,32 @@ export class NoveltyService {
   /**
    * Get screening history for project.
    */
-  async getProjectScreenings(projectId: string): Promise<any[]> {
+  async getProjectScreenings(
+    projectId: string,
+    userId: string,
+    userRole: UserRole = UserRole.STUDENT
+  ): Promise<any[]> {
+    await verifyProjectAccess(projectId, userId, userRole, false);
     return noveltyRepository.findByProject(projectId);
   }
 
   /**
    * Get specific screening details.
    */
-  async getScreeningById(id: string): Promise<any> {
+  async getScreeningById(
+    id: string,
+    userId: string,
+    userRole: UserRole = UserRole.STUDENT
+  ): Promise<any> {
     const screening = await noveltyRepository.findById(id);
     if (!screening) {
       throw new NotFoundError('Novelty screening report not found.');
+    }
+    const pId = screening.projectId?._id
+      ? screening.projectId._id.toString()
+      : screening.projectId?.toString();
+    if (pId) {
+      await verifyProjectAccess(pId, userId, userRole, false);
     }
     return screening;
   }

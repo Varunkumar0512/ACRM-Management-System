@@ -3,9 +3,10 @@ import { UserRole } from '../config/constants.js';
 
 export interface IUser extends Document {
   email: string;
-  passwordHash: string;
+  passwordHash?: string;
   fullName: string;
   role: UserRole;
+  googleId?: string;
   avatarUrl?: string;
   phone?: string;
   isActive: boolean;
@@ -30,9 +31,17 @@ const userSchema = new Schema<IUser>(
       trim: true,
       index: true,
     },
+    googleId: {
+      type: String,
+      sparse: true,
+      unique: true,
+      index: true,
+      default: undefined,
+    },
     passwordHash: {
       type: String,
-      required: true,
+      required: false,
+      default: null,
     },
     fullName: {
       type: String,

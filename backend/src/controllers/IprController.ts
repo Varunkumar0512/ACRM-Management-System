@@ -5,7 +5,7 @@ import { UserRole } from '../config/constants.js';
 export class IprController {
   submitDisclosure = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await iprService.submitDisclosure(req.user!.userId, req.body);
+      const result = await iprService.submitDisclosure(req.user!.userId, req.body, req.user!.role as UserRole);
       res.status(201).json({
         success: true,
         data: result,
@@ -54,7 +54,7 @@ export class IprController {
   updateStatus = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { status, notes } = req.body;
-      const result = await iprService.updateStatus(req.params.id, status, req.user!.userId, notes);
+      const result = await iprService.updateStatus(req.params.id, status, req.user!.userId, req.user!.role as UserRole, notes);
       res.status(200).json({
         success: true,
         data: result,
@@ -66,7 +66,7 @@ export class IprController {
 
   addComment = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await iprService.addComment(req.params.id, req.user!.userId, req.body);
+      const result = await iprService.addComment(req.params.id, req.user!.userId, req.user!.role as UserRole, req.body);
       res.status(201).json({
         success: true,
         data: result,
@@ -78,7 +78,7 @@ export class IprController {
 
   resolveComment = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await iprService.resolveComment(req.params.commentId, req.user!.userId);
+      const result = await iprService.resolveComment(req.params.commentId, req.user!.userId, req.user!.role as UserRole);
       res.status(200).json({
         success: true,
         data: result,
@@ -90,7 +90,7 @@ export class IprController {
 
   addDocument = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await iprService.addDocument(req.params.id, req.user!.userId, req.body);
+      const result = await iprService.addDocument(req.params.id, req.user!.userId, req.user!.role as UserRole, req.body);
       res.status(201).json({
         success: true,
         data: result,
@@ -102,7 +102,7 @@ export class IprController {
 
   recordApplication = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await iprService.recordApplication(req.params.id, req.body);
+      const result = await iprService.recordApplication(req.params.id, req.body, req.user!.userId, req.user!.role as UserRole);
       res.status(201).json({
         success: true,
         data: result,

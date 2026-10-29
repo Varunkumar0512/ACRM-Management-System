@@ -137,6 +137,10 @@ export class ProjectRepository {
     return Milestone.findByIdAndUpdate(milestoneId, updates, { new: true });
   }
 
+  async findMilestoneById(milestoneId: string): Promise<IMilestone | null> {
+    return Milestone.findById(milestoneId);
+  }
+
   async deleteMilestone(milestoneId: string): Promise<boolean> {
     const res = await Milestone.findByIdAndDelete(milestoneId);
     return !!res;
@@ -195,6 +199,10 @@ export class ProjectRepository {
   async createComment(data: Partial<IComment>): Promise<IComment> {
     const comment = await Comment.create(data);
     return comment.populate('authorId', 'email fullName avatarUrl role');
+  }
+
+  async findCommentById(commentId: string): Promise<IComment | null> {
+    return Comment.findById(commentId);
   }
 
   async updateComment(commentId: string, updates: Partial<IComment>): Promise<IComment | null> {

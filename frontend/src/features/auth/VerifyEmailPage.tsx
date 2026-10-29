@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useSearchParams, useParams } from 'react-router-dom';
 import { authApi } from '../../services/api/authApi';
-import { CheckCircle2, AlertCircle, ArrowRight, ShieldCheck } from 'lucide-react';
-import { Button } from '../../components/ui/Button';
+import { CheckCircle2, AlertCircle, ArrowRight, Compass } from 'lucide-react';
 
 export const VerifyEmailPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -39,20 +38,48 @@ export const VerifyEmailPage: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'var(--bg-page)',
-        padding: '1.5rem',
+        backgroundColor: '#F7F9FC',
+        padding: '2rem 1.5rem',
       }}
     >
-      <div className="acr-card" style={{ width: '100%', maxWidth: '480px', padding: '2.5rem', textAlign: 'center' }}>
+      <div
+        style={{
+          width: '100%',
+          maxWidth: '460px',
+          padding: '2.75rem 2.5rem',
+          backgroundColor: '#FFFFFF',
+          borderRadius: '14px',
+          border: '1px solid #E2E8F0',
+          boxShadow: '0 4px 12px -2px rgba(20, 33, 61, 0.07)',
+          textAlign: 'center',
+        }}
+      >
         <div style={{ marginBottom: '1.5rem' }}>
-          <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none', color: 'inherit' }}>
-            <img src="/logo.svg" alt="ACRM Logo" style={{ width: 42, height: 42 }} />
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)' }}>ACRM</div>
-              <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', fontWeight: 600 }}>
-                Automated Campus Research Management
-              </div>
+          <Link
+            to="/"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.65rem',
+              textDecoration: 'none',
+              color: 'inherit',
+              marginBottom: '1rem',
+            }}
+          >
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: '8px',
+                backgroundColor: '#4268E8',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Compass size={20} color="#FFFFFF" />
             </div>
+            <span style={{ fontSize: '1.2rem', fontWeight: 800, color: '#172033' }}>ACRM</span>
           </Link>
         </div>
 
@@ -60,19 +87,19 @@ export const VerifyEmailPage: React.FC = () => {
           <div>
             <div
               style={{
-                width: 44,
-                height: 44,
-                border: '3px solid var(--border-default)',
-                borderTopColor: 'var(--primary-600)',
+                width: 40,
+                height: 40,
+                border: '3px solid #E2E8F0',
+                borderTopColor: '#4268E8',
                 borderRadius: '50%',
                 animation: 'spin 0.8s linear infinite',
                 margin: '1.5rem auto',
               }}
             />
-            <h2 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#172033', marginBottom: '0.35rem' }}>
               Verifying Institutional Email...
             </h2>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+            <p style={{ fontSize: '0.85rem', color: '#66748B' }}>
               Confirming your university credentials in the ACRM platform.
             </p>
           </div>
@@ -85,27 +112,32 @@ export const VerifyEmailPage: React.FC = () => {
                 width: 56,
                 height: 56,
                 borderRadius: '50%',
-                backgroundColor: '#dcfce7',
-                color: '#16a34a',
+                backgroundColor: '#ECFDF5',
+                color: '#0D9970',
+                border: '1px solid #A7F3D0',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                margin: '1rem auto 1.5rem',
+                margin: '0 auto 1.25rem',
               }}
             >
               <CheckCircle2 size={32} />
             </div>
 
-            <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
-              Institutional Email Verified!
+            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: '#172033', marginBottom: '0.45rem' }}>
+              Institutional Email Verified
             </h2>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '2rem' }}>
-              Your academic identity has been confirmed. You now have full access to ACRM research discovery, project workspaces, and IPR innovation modules.
+            <p style={{ fontSize: '0.85rem', color: '#66748B', lineHeight: 1.5, marginBottom: '1.75rem' }}>
+              Your academic account has been verified. You now have full access to your campus research workspace.
             </p>
 
-            <Link to="/sign-in" className="acr-btn acr-btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-              <span>Proceed to Sign In</span>
-              <ArrowRight size={16} />
+            <Link
+              to="/sign-in"
+              className="acr-btn acr-btn-primary"
+              style={{ width: '100%', height: '44px', backgroundColor: '#4268E8', borderColor: '#4268E8' }}
+            >
+              <span>Continue to Sign In</span>
+              <ArrowRight size={15} />
             </Link>
           </div>
         )}
@@ -117,30 +149,39 @@ export const VerifyEmailPage: React.FC = () => {
                 width: 56,
                 height: 56,
                 borderRadius: '50%',
-                backgroundColor: 'var(--danger-bg)',
-                color: 'var(--danger-text)',
+                backgroundColor: '#FEF2F2',
+                color: '#EF4444',
+                border: '1px solid #FECACA',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                margin: '1rem auto 1.5rem',
+                margin: '0 auto 1.25rem',
               }}
             >
               <AlertCircle size={32} />
             </div>
 
-            <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--text-primary)', marginBottom: '0.5rem' }}>
+            <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0F172A', marginBottom: '0.45rem' }}>
               Verification Failed
             </h2>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '2rem' }}>
+            <p style={{ fontSize: '0.85rem', color: '#64748B', lineHeight: 1.5, marginBottom: '1.75rem' }}>
               {errorMessage}
             </p>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <Link to="/sign-in" className="acr-btn acr-btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-                Sign In to Account
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <Link
+                to="/sign-in"
+                className="acr-btn acr-btn-secondary"
+                style={{ flex: 1, height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                Sign In
               </Link>
-              <Link to="/sign-up" className="acr-btn acr-btn-ghost" style={{ width: '100%', justifyContent: 'center' }}>
-                Return to Registration
+              <Link
+                to="/support"
+                className="acr-btn acr-btn-primary"
+                style={{ flex: 1, height: '42px', backgroundColor: '#4268E8', borderColor: '#4268E8' }}
+              >
+                Campus Helpdesk
               </Link>
             </div>
           </div>

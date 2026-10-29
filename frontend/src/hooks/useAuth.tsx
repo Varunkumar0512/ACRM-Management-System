@@ -12,6 +12,7 @@ interface AuthContextType {
   signUpFaculty: (data: any) => Promise<void>;
   signOut: () => Promise<void>;
   reloadUser: () => Promise<void>;
+  signInWithGoogle: (idToken: string, linkPassword?: string) => Promise<any>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,6 +45,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProfile(data.profile);
   };
 
+  const signInWithGoogle = async (idToken: string, linkPassword?: string) => {
+    const data = await authApi.googleAuth({ idToken, linkPassword });
+    setUser(data.user);
+    setProfile(data.profile);
+    return data;
+  };
+
   const signUpStudent = async (formData: any) => {
     const data = await authApi.signUpStudent(formData);
     setUser(data.user);
@@ -74,6 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         isAuthenticated: !!user,
         signIn,
+        signInWithGoogle,
         signUpStudent,
         signUpFaculty,
         signOut,

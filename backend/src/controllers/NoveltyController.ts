@@ -4,7 +4,7 @@ import { noveltyService } from '../services/NoveltyService.js';
 export class NoveltyController {
   runScreening = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await noveltyService.runPreliminaryScreening(req.user!.userId, req.body);
+      const result = await noveltyService.runPreliminaryScreening(req.user!.userId, req.body, req.user!.role);
       res.status(201).json({
         success: true,
         data: result,
@@ -16,7 +16,7 @@ export class NoveltyController {
 
   processChatMessage = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await noveltyService.processAssistantMessage(req.user!.userId, req.body);
+      const result = await noveltyService.processAssistantMessage(req.user!.userId, req.body, req.user!.role);
       res.status(200).json({
         success: true,
         data: result,
@@ -28,7 +28,7 @@ export class NoveltyController {
 
   acknowledgeScreening = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await noveltyService.acknowledgeScreening(req.params.id, req.user!.userId);
+      const result = await noveltyService.acknowledgeScreening(req.params.id, req.user!.userId, req.user!.role);
       res.status(200).json({
         success: true,
         data: result,
@@ -40,7 +40,7 @@ export class NoveltyController {
 
   getProjectScreenings = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await noveltyService.getProjectScreenings(req.params.projectId);
+      const result = await noveltyService.getProjectScreenings(req.params.projectId, req.user!.userId, req.user!.role);
       res.status(200).json({
         success: true,
         data: result,
@@ -52,7 +52,7 @@ export class NoveltyController {
 
   getScreeningById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const result = await noveltyService.getScreeningById(req.params.id);
+      const result = await noveltyService.getScreeningById(req.params.id, req.user!.userId, req.user!.role);
       res.status(200).json({
         success: true,
         data: result,

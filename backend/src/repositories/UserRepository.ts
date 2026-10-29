@@ -10,6 +10,10 @@ export class UserRepository {
     return User.findOne({ email: email.toLowerCase().trim() });
   }
 
+  async findByGoogleId(googleId: string): Promise<IUser | null> {
+    return User.findOne({ googleId });
+  }
+
   async findByPasswordResetToken(token: string): Promise<IUser | null> {
     return User.findOne({
       passwordResetToken: token,

@@ -4,6 +4,7 @@ import { projectRepository } from '../repositories/ProjectRepository.js';
 import { auditLogRepository } from '../repositories/AuditLogRepository.js';
 import { IprStatus, IprCategory, IprConfidentiality, IprDocumentType, AuditAction, UserRole } from '../config/constants.js';
 import { BadRequestError, UnauthorizedError, NotFoundError, ForbiddenError } from '../errors/AppError.js';
+import { verifyProjectAccess } from '../utils/projectAuth.js';
 import mongoose from 'mongoose';
 
 export class IprService {
@@ -24,17 +25,21 @@ export class IprService {
       stageOfDevelopment?: string;
       coInventors?: Array<{ userId?: string; name: string; email: string; department?: string; sharePercentage?: number }>;
       acknowledgementAccepted: boolean;
-    }
+    },
+    userRole: UserRole = UserRole.STUDENT
   ): Promise<any> {
     if (!data.acknowledgementAccepted) {
       throw new BadRequestError('You must explicitly accept the preliminary screening acknowledgment.');
     }
 
     // Step 1: Validate Project exists and user has rights
-    const project = await projectRepository.findById(data.projectId);
-    if (!project) {
-      throw new NotFoundError('Associated project not found.');
+    const access = await verifyProjectAccess(data.projectId, userId, userRole, true);
+    if (!access.isOwner && !access.isMember && !access.isAdmin) {
+      throw new ForbiddenError(
+        'Only project owners, team members, or administrators can submit IPR disclosures for this project.'
+      );
     }
+    const project = access.project;
 
     // Step 2: Validate that Novelty Screening exists, is completed, and belongs to this project
     const screening = await noveltyRepository.findById(data.screeningId);
@@ -188,8 +193,13 @@ export class IprService {
     id: string,
     newStatus: IprStatus,
     userId: string,
+    userRole: UserRole,
     notes?: string
   ): Promise<any> {
+    if (userRole !== UserRole.FACULTY && userRole !== UserRole.ADMIN) {
+      throw new ForbiddenError('Only faculty reviewers or administrators can update IPR status.');
+    }
+
     const disclosure = await iprRepository.findById(id);
     if (!disclosure) {
       throw new NotFoundError('IPR disclosure not found.');
@@ -226,11 +236,33 @@ export class IprService {
   async addComment(
     iprId: string,
     userId: string,
+    userRole: UserRole,
     data: { message: string; relatedSection?: string; parentCommentId?: string }
   ): Promise<any> {
     const disclosure = await iprRepository.findById(iprId);
     if (!disclosure) {
       throw new NotFoundError('IPR disclosure not found.');
+    }
+
+    if (userRole !== UserRole.ADMIN) {
+      const isPrimary =
+        (disclosure.primaryInventorId as any)?._id?.toString() === userId ||
+        disclosure.primaryInventorId.toString() === userId;
+      const isCoInventor = disclosure.coInventors?.some((c) => c.userId?.toString() === userId);
+      const isAssigned =
+        (disclosure.assignedReviewerId as any)?._id?.toString() === userId ||
+        disclosure.assignedReviewerId?.toString() === userId;
+      if (!isPrimary && !isCoInventor && !isAssigned) {
+        if (disclosure.confidentiality === IprConfidentiality.PRIVATE) {
+          throw new ForbiddenError('This IPR disclosure is designated Private.');
+        }
+        if (
+          disclosure.confidentiality === IprConfidentiality.AUTHORIZED_IPR_REVIEWERS &&
+          userRole !== UserRole.FACULTY
+        ) {
+          throw new ForbiddenError('Access is restricted to authorized IPR reviewers.');
+        }
+      }
     }
 
     const comment = await iprRepository.addComment({
@@ -248,7 +280,7 @@ export class IprService {
   /**
    * Resolve an IPR comment thread.
    */
-  async resolveComment(commentId: string, userId: string): Promise<any> {
+  async resolveComment(commentId: string, userId: string, userRole: UserRole): Promise<any> {
     const comment = await iprRepository.resolveComment(commentId, userId);
     if (!comment) {
       throw new NotFoundError('Comment not found.');
@@ -262,11 +294,27 @@ export class IprService {
   async addDocument(
     iprId: string,
     userId: string,
+    userRole: UserRole,
     data: { originalName: string; filename: string; type?: IprDocumentType; description?: string }
   ): Promise<any> {
     const disclosure = await iprRepository.findById(iprId);
     if (!disclosure) {
       throw new NotFoundError('IPR disclosure not found.');
+    }
+
+    if (userRole !== UserRole.ADMIN) {
+      const isPrimary =
+        (disclosure.primaryInventorId as any)?._id?.toString() === userId ||
+        disclosure.primaryInventorId.toString() === userId;
+      const isCoInventor = disclosure.coInventors?.some((c) => c.userId?.toString() === userId);
+      const isAssigned =
+        (disclosure.assignedReviewerId as any)?._id?.toString() === userId ||
+        disclosure.assignedReviewerId?.toString() === userId;
+      if (!isPrimary && !isCoInventor && !isAssigned) {
+        throw new ForbiddenError(
+          'Only inventors, assigned reviewers, or administrators can upload documents to this IPR disclosure.'
+        );
+      }
     }
 
     const existingDocs = await iprRepository.getDocuments(iprId);
@@ -299,8 +347,14 @@ export class IprService {
       publicationNumber?: string;
       grantNumber?: string;
       notes?: string;
-    }
+    },
+    userId: string,
+    userRole: UserRole
   ): Promise<any> {
+    if (userRole !== UserRole.FACULTY && userRole !== UserRole.ADMIN) {
+      throw new ForbiddenError('Only faculty reviewers or administrators can record external applications.');
+    }
+
     const disclosure = await iprRepository.findById(iprId);
     if (!disclosure) {
       throw new NotFoundError('IPR disclosure not found.');

@@ -7,6 +7,7 @@ import { Modal } from '../../components/ui/Modal';
 import { useToast } from '../../hooks/useToast';
 import { Tabs } from '../../components/ui/Tabs';
 import { Search, UserCheck, UserX, Edit2, ShieldAlert } from 'lucide-react';
+import { PageHeader } from '../../components/dashboard';
 
 export const UserManagementPage: React.FC = () => {
   const toast = useToast();
@@ -78,23 +79,14 @@ export const UserManagementPage: React.FC = () => {
 
   return (
     <div>
-      <Breadcrumbs
-        items={[
+      <PageHeader
+        title="User Directory & Academic Governance"
+        subtitle="Review enrolled students, manage faculty designations, and enforce institutional account access statuses"
+        breadcrumbs={[
           { label: 'Admin', path: '/admin/dashboard' },
-          { label: 'User Directory & Account Governance' },
+          { label: 'User Governance' },
         ]}
       />
-
-      <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-            User Directory & Academic Governance
-          </h1>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-            Review enrolled students, manage faculty designations, and enforce institutional account statuses
-          </p>
-        </div>
-      </div>
 
       <Tabs
         tabs={[

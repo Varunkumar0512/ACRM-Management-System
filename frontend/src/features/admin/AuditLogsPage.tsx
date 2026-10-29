@@ -4,6 +4,7 @@ import { Breadcrumbs } from '../../components/ui/Breadcrumbs';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { History, Shield, Search } from 'lucide-react';
+import { PageHeader } from '../../components/dashboard';
 
 export const AuditLogsPage: React.FC = () => {
   const [logs, setLogs] = useState<any[]>([]);
@@ -25,23 +26,14 @@ export const AuditLogsPage: React.FC = () => {
 
   return (
     <div>
-      <Breadcrumbs
-        items={[
+      <PageHeader
+        title="System Audit & Security Logs"
+        subtitle="Immutable event records tracking authentication events, status updates, reviews, and administrative changes"
+        breadcrumbs={[
           { label: 'Admin', path: '/admin/dashboard' },
-          { label: 'System Audit Logs' },
+          { label: 'Audit Logs' },
         ]}
       />
-
-      <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-            System Audit & Security Logs
-          </h1>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-            Immutable event records tracking authentication events, status updates, reviews, and administrative changes
-          </p>
-        </div>
-      </div>
 
       {/* Filter Bar */}
       <div className="acr-card" style={{ padding: '0.85rem 1rem', marginBottom: '1.5rem' }}>

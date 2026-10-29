@@ -82,13 +82,64 @@ export class AuthController {
     }
   };
 
+  private clearTokenCookies(res: Response) {
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: env.COOKIE_SECURE,
+      sameSite: 'lax',
+      path: '/',
+    });
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: env.COOKIE_SECURE,
+      sameSite: 'lax',
+      path: '/',
+    });
+  }
+
+  googleAuth = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { idToken, linkPassword } = req.body;
+      const ipAddress = req.ip || req.socket.remoteAddress;
+      const userAgent = req.headers['user-agent'];
+
+      const result = await authService.authenticateGoogle({
+        idToken,
+        linkPassword,
+        ipAddress,
+        userAgent,
+      });
+
+      this.setTokenCookies(res, result.tokens.accessToken, result.tokens.refreshToken);
+
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  changePassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      await authService.changePassword(req.user!.userId, currentPassword, newPassword);
+
+      res.status(200).json({
+        success: true,
+        data: { message: 'Password has been successfully updated.' },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   signOut = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      if (req.user) {
-        await authService.signOut(req.user.userId);
-      }
-      res.clearCookie('accessToken', { path: '/' });
-      res.clearCookie('refreshToken', { path: '/' });
+      const rawRefreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+      await authService.signOut(req.user?.userId, rawRefreshToken);
+      this.clearTokenCookies(res);
 
       res.status(200).json({
         success: true,

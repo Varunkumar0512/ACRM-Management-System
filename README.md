@@ -133,7 +133,8 @@ npm install --prefix frontend
 ```
 
 ### 2. Configure Environment
-Backend `.env`:
+
+Backend `.env` (`backend/.env`):
 ```ini
 NODE_ENV=development
 PORT=5000
@@ -145,27 +146,102 @@ JWT_ACCESS_EXPIRES_IN=15m
 JWT_REFRESH_EXPIRES_IN=7d
 COOKIE_SECURE=false
 UPLOAD_DIR=uploads
+
+# Google OAuth 2.0 Identity Services Configuration
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+# Optional: comma-separated list of allowed domains (e.g., university.edu,campus.ac.in)
+GOOGLE_ALLOWED_DOMAINS=
 ```
 
-### 3. Seed Database
+Frontend `.env` (`frontend/.env`):
+```ini
+# Google Identity Services Client ID
+VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+```
+
+---
+
+## 5. Google Authentication — Sign in with Google Setup Guide
+
+ACRM integrates **Google Identity Services (GIS)** to provide enterprise-grade Single Sign-On (SSO) with official Google branding and multi-layered server-side verification.
+
+### Google Cloud Console Configuration Steps
+
+1. **Create or Select a Google Cloud Project**:
+   - Navigate to the [Google Cloud Console](https://console.cloud.google.com/).
+   - Click the project dropdown in the top bar and select **New Project**.
+   - Enter a project name (e.g. `ACRM-Institutional-Auth`) and click **Create**.
+
+2. **Configure the OAuth Consent Screen**:
+   - Go to **APIs & Services > OAuth consent screen**.
+   - User Type: Select **External** (or **Internal** if using Google Workspace for your educational institution).
+   - App Name: `Automated Campus Research Management (ACRM)`.
+   - User support email: Select your administrator email.
+   - Authorized domains: Add your production domain (e.g. `your-university.edu`).
+   - Developer contact information: Enter administrative contact email.
+   - Scopes: Request minimal standard identity scopes only: `openid`, `.../auth/userinfo.email`, and `.../auth/userinfo.profile`. Basic sign-in requests only the essential identity claims.
+   - Test users (if in External "Testing" mode): Add the email addresses of faculty and student Google accounts that will be testing the application.
+
+3. **Create a Web Application OAuth Client ID**:
+   - Navigate to **APIs & Services > Credentials**.
+   - Click **+ CREATE CREDENTIALS** and select **OAuth client ID**.
+   - Application type: **Web application**.
+   - Name: `ACRM Web Client`.
+   - **Authorized JavaScript origins**:
+     - Local development:
+       - `http://localhost:3000`
+       - `http://127.0.0.1:3000`
+     - Production:
+       - `https://acrm.your-institution.edu`
+   - **Authorized redirect URIs**:
+     - Google Identity Services (credential token flow) primarily uses JavaScript origins. If using redirect flows or server callback fallbacks, configure:
+       - `http://localhost:3000/sign-in`
+       - `http://localhost:5000/api/v1/auth/google/callback`
+   - Click **Create**. Copy the generated **Client ID** (e.g., `1234567890-abcdefg.apps.googleusercontent.com`).
+   - *Security Note*: Never expose the Google Client Secret in the frontend. The frontend only needs `VITE_GOOGLE_CLIENT_ID`.
+
+4. **Configure Environment Variables**:
+   - Set `VITE_GOOGLE_CLIENT_ID` in `frontend/.env`.
+   - Set `GOOGLE_CLIENT_ID` in `backend/.env`.
+   - (Optional) Configure `GOOGLE_ALLOWED_DOMAINS=university.edu,campus.edu` in `backend/.env` to restrict authentication strictly to institutional domains.
+
+5. **Testing Institutional Accounts**:
+   - **New Student Google Account**: Click "Continue with Google" on Sign In or Sign Up. A new student profile is automatically provisioned with role `STUDENT` without requiring manual form entry.
+   - **Existing Account Linking**: If an institutional researcher already has a password-based account (e.g. `faculty@university.edu`), signing in with that Google account prompts for their existing password to verify ownership. Once verified, the Google identity (`googleId`) is linked to their profile, preserving all assigned projects, research papers, faculty reviews, and IPR records.
+   - **Unauthorized Domain Test**: If `GOOGLE_ALLOWED_DOMAINS` is set, accounts from outside authorized domains receive an explicit HTTP 403 institutional restriction error.
+   - **Disabled Account Rejection**: Deactivated student or faculty accounts cannot authenticate via Google or password.
+
+---
+
+## 6. Seed Database & Local Execution
+
+### 1. Seed Database
 ```bash
 npm run seed
 ```
 
-### 4. Run Development Servers
+### 2. Run Development Servers
 ```bash
-# Concurrently starts backend on :5000 and frontend on :3000
 npm run dev
 ```
 - **Frontend Portal**: `http://localhost:3000/`
 - **Backend API**: `http://localhost:5000/api/v1/`
 - **Health Check**: `http://localhost:5000/api/v1/health`
 
-### 5. Run Automated Tests
+### 3. Run Automated Tests
 ```bash
-npm run test
+# Run all backend tests (35 integration tests across security, auth, IPR, projects)
+npm test --prefix backend
 ```
-Executes the Vitest & Supertest integration suite verifying auth, RBAC, project lifecycle, and deterministic recommendations.
+Executes the comprehensive Vitest suite covering:
+- Valid and invalid Google ID token verification (signature, issuer, expiration, audience).
+- Google user auto-registration and default `STUDENT` role assignment.
+- Secure account linking requiring existing password confirmation (HTTP 409 `ACCOUNT_LINKING_REQUIRED`).
+- Prevention of duplicate Google ID binding across multiple institutional users.
+- Disabled account sign-in rejection.
+- Password change via real backend API (`POST /api/v1/auth/change-password`).
+- Session revocation and HttpOnly cookie clearance on logout.
+- Strict resource-level authorization across project milestones, comments, documents, novelty screenings, and IPR workflows.
 
 ---
 

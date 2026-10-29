@@ -40,4 +40,14 @@ export const authApi = {
     const res = await apiClient.get(`/auth/verify-email/${token}`);
     return res.data.data;
   },
+
+  googleAuth: async (data: { idToken: string; linkPassword?: string }) => {
+    const res = await apiClient.post('/auth/google', data);
+    return res.data.data;
+  },
+
+  changePassword: async (data: { currentPassword?: string; newPassword: string; confirmPassword: string }) => {
+    const res = await apiClient.post('/auth/change-password', data);
+    return res.data.data;
+  },
 };

@@ -1,26 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { Button } from '../../components/ui/Button';
 import {
   Eye,
   EyeOff,
   AlertCircle,
-  ShieldCheck,
-  Sparkles,
   FolderGit2,
   Users,
-  Lightbulb,
-  Award,
+  Compass,
   ArrowRight,
-  ChevronDown,
+  ShieldCheck,
+  CheckCircle2,
 } from 'lucide-react';
+import { GoogleAuthButton } from '../../components/auth/GoogleAuthButton';
 
 export const SignInPage: React.FC = () => {
   const { signIn } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const initialRole = searchParams.get('role');
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,80 +24,80 @@ export const SignInPage: React.FC = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (initialRole === 'student') {
-      setEmail('student@university.edu');
-      setPassword('Password123!');
-    } else if (initialRole === 'faculty') {
-      setEmail('faculty@university.edu');
-      setPassword('Password123!');
-    } else if (initialRole === 'admin') {
-      setEmail('admin@university.edu');
-      setPassword('AdminSecret123!');
+  // Check if Google OAuth client ID is configured and functional
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const isGoogleAuthConfigured = Boolean(
+    googleClientId &&
+    googleClientId.trim() !== '' &&
+    !googleClientId.includes('your_google_client_id')
+  );
+
+  const validateForm = (): boolean => {
+    let valid = true;
+    setEmailError(null);
+    setPasswordError(null);
+
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      setEmailError('Enter your institutional email address.');
+      valid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setEmailError('Enter a valid institutional email address.');
+      valid = false;
     }
-  }, [initialRole]);
+
+    if (!password) {
+      setPasswordError('Enter your password to continue.');
+      valid = false;
+    }
+
+    return valid;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      setErrorMessage('Please enter both your institutional email and password.');
+    setErrorMessage(null);
+
+    if (!validateForm()) {
       return;
     }
 
     setIsLoading(true);
-    setErrorMessage(null);
 
     try {
-      await signIn({ email, password, rememberMe });
+      await signIn({ email: email.trim(), password, rememberMe });
       navigate('/dashboard');
     } catch (err: any) {
-      const msg = err.response?.data?.error?.message || 'Authentication failed. Please verify your credentials.';
-      setErrorMessage(msg);
+      const serverMsg = err.response?.data?.error?.message;
+      setErrorMessage(
+        serverMsg || 'Unable to sign in. Check your credentials and try again.'
+      );
     } finally {
       setIsLoading(false);
     }
   };
-
-  const fillCredentials = (role: 'student' | 'faculty' | 'admin') => {
-    if (role === 'student') {
-      setEmail('student@university.edu');
-      setPassword('Password123!');
-    } else if (role === 'faculty') {
-      setEmail('faculty@university.edu');
-      setPassword('Password123!');
-    } else {
-      setEmail('admin@university.edu');
-      setPassword('AdminSecret123!');
-    }
-  };
-
-  const lifecycleSteps = [
-    { title: 'IDEA', desc: 'Concept & Problem Formulation', icon: Lightbulb, glow: '#3B82F6' },
-    { title: 'PROJECT', desc: 'Structured Charter & Deliverables', icon: FolderGit2, glow: '#2457D6' },
-    { title: 'COLLABORATION', desc: 'Faculty Guidance & Mentorship', icon: Users, glow: '#059669' },
-    { title: 'INNOVATION', desc: 'AI Novelty Scoring & Analysis', icon: Sparkles, glow: '#22D3EE' },
-    { title: 'IPR', desc: 'Institutional Patent Protection', icon: Award, glow: '#7C3AED' },
-  ];
 
   return (
     <div
       style={{
         minHeight: '100vh',
         display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        backgroundColor: '#F4F7FB',
+        gridTemplateColumns: '1.05fr 1.15fr',
+        backgroundColor: '#F6F8FC',
       }}
-      className="acr-login-container"
+      className="acr-auth-layout"
     >
       {/* =========================================================================
-          LEFT 50%: DEEP NAVY #071426 WITH GLOWING RESEARCH LIFECYCLE
+          LEFT BRAND PANEL: DEEP NAVY #101B35 WITH RESEARCH-NETWORK LINEWORK
           ========================================================================= */}
-      <div
+      <aside
         style={{
-          backgroundColor: '#071426',
+          backgroundColor: '#101B35',
           color: '#FFFFFF',
-          padding: '4.5rem 5rem',
+          padding: '3.75rem 4rem',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
@@ -109,164 +105,359 @@ export const SignInPage: React.FC = () => {
           overflow: 'hidden',
           borderRight: '1px solid rgba(255, 255, 255, 0.08)',
         }}
+        className="acr-auth-left-panel"
+        aria-label="ACRM Platform Information"
       >
-        {/* Subtle Ambient Lighting */}
+        {/* Subtle geometric research-network background illustration */}
+        <svg
+          style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            width: '100%',
+            height: '100%',
+            opacity: 0.16,
+            pointerEvents: 'none',
+          }}
+          viewBox="0 0 600 800"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          {/* Coordinate circles */}
+          <circle cx="480" cy="180" r="140" stroke="#36BFFA" strokeWidth="1" strokeDasharray="4 6" />
+          <circle cx="480" cy="180" r="260" stroke="#4268E8" strokeWidth="1" strokeDasharray="3 8" />
+          <circle cx="120" cy="680" r="220" stroke="#4268E8" strokeWidth="1" strokeDasharray="4 6" />
+
+          {/* Research network nodes & connecting lines */}
+          <line x1="160" y1="120" x2="320" y2="210" stroke="#4268E8" strokeWidth="1.2" />
+          <line x1="320" y1="210" x2="480" y2="180" stroke="#36BFFA" strokeWidth="1.2" />
+          <line x1="320" y1="210" x2="260" y2="380" stroke="#4268E8" strokeWidth="1" />
+          <line x1="260" y1="380" x2="440" y2="460" stroke="#36BFFA" strokeWidth="1" />
+          <line x1="440" y1="460" x2="380" y2="620" stroke="#4268E8" strokeWidth="1.2" />
+          <line x1="260" y1="380" x2="160" y2="520" stroke="#36BFFA" strokeWidth="1" />
+          <line x1="160" y1="520" x2="380" y2="620" stroke="#4268E8" strokeWidth="1" />
+
+          <circle cx="160" cy="120" r="4" fill="#36BFFA" />
+          <circle cx="320" cy="210" r="5" fill="#4268E8" />
+          <circle cx="480" cy="180" r="6" fill="#36BFFA" />
+          <circle cx="260" cy="380" r="5" fill="#4268E8" />
+          <circle cx="440" cy="460" r="4" fill="#36BFFA" />
+          <circle cx="160" cy="520" r="4" fill="#4268E8" />
+          <circle cx="380" cy="620" r="5" fill="#36BFFA" />
+        </svg>
+
+        {/* Ambient top & bottom gradient accents */}
         <div
           style={{
             position: 'absolute',
-            top: '-10%',
-            left: '-10%',
-            width: '500px',
-            height: '500px',
-            background: 'radial-gradient(circle, rgba(36, 87, 214, 0.25) 0%, rgba(7, 20, 38, 0) 70%)',
+            top: '-120px',
+            right: '-120px',
+            width: '320px',
+            height: '320px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(66, 104, 232, 0.18) 0%, transparent 70%)',
             pointerEvents: 'none',
           }}
         />
         <div
           style={{
             position: 'absolute',
-            bottom: '5%',
-            right: '-5%',
-            width: '450px',
-            height: '450px',
-            background: 'radial-gradient(circle, rgba(34, 211, 238, 0.12) 0%, rgba(7, 20, 38, 0) 70%)',
+            bottom: '-120px',
+            left: '-120px',
+            width: '360px',
+            height: '360px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(54, 191, 250, 0.12) 0%, transparent 70%)',
             pointerEvents: 'none',
           }}
         />
 
         {/* Brand Header */}
         <div style={{ position: 'relative', zIndex: 2 }}>
-          <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.85rem', textDecoration: 'none', color: '#FFFFFF' }}>
-            <img src="/logo.svg" alt="ACRM Logo" style={{ width: 42, height: 42, borderRadius: '8px' }} />
+          <Link
+            to="/"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.85rem',
+              textDecoration: 'none',
+              color: '#FFFFFF',
+            }}
+          >
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: '12px',
+                backgroundColor: '#4268E8',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 14px rgba(66, 104, 232, 0.35)',
+              }}
+            >
+              <Compass size={22} color="#FFFFFF" />
+            </div>
             <div>
-              <div style={{ fontSize: '1.4rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#FFFFFF', lineHeight: 1.1, fontFamily: 'var(--font-display)' }}>
+              <div
+                style={{
+                  fontSize: '1.25rem',
+                  fontWeight: 800,
+                  letterSpacing: '-0.02em',
+                  color: '#FFFFFF',
+                  lineHeight: 1.1,
+                }}
+              >
                 ACRM
               </div>
-              <div style={{ fontSize: '0.6875rem', color: '#94A3B8', fontWeight: 600, letterSpacing: '0.04em' }}>
+              <div
+                style={{
+                  fontSize: '0.625rem',
+                  color: '#94A3B8',
+                  fontWeight: 600,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  marginTop: '0.15rem',
+                }}
+              >
                 AUTOMATED CAMPUS RESEARCH MANAGEMENT
               </div>
             </div>
           </Link>
         </div>
 
-        {/* Center Content & Glowing Lifecycle Visual */}
-        <div style={{ position: 'relative', zIndex: 2, margin: '3.5rem 0' }}>
+        {/* Brand Message and Value Proposition */}
+        <div style={{ position: 'relative', zIndex: 2, margin: '2.5rem 0' }}>
+          {/* Eyebrow */}
           <div
             style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: '2.8rem',
-              fontWeight: 800,
-              lineHeight: 1.15,
-              color: '#FFFFFF',
-              marginBottom: '1rem',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              padding: '0.28rem 0.8rem',
+              borderRadius: '9999px',
+              backgroundColor: 'rgba(66, 104, 232, 0.18)',
+              border: '1px solid rgba(66, 104, 232, 0.32)',
+              color: '#36BFFA',
+              fontSize: '0.7rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              marginBottom: '1.15rem',
             }}
           >
-            Research. <br />
-            Innovation. <br />
-            <span className="text-gradient-cyan">Impact.</span>
+            THE RESEARCH WORKSPACE
           </div>
 
+          {/* Headline */}
+          <h1
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '2.15rem',
+              fontWeight: 800,
+              lineHeight: 1.25,
+              color: '#FFFFFF',
+              letterSpacing: '-0.025em',
+              marginBottom: '1rem',
+              maxWidth: '480px',
+            }}
+          >
+            Research begins with an idea. Progress happens together.
+          </h1>
+
+          {/* Supporting text */}
           <p
             style={{
-              fontSize: '1rem',
-              color: '#94A3B8',
+              fontSize: '0.9375rem',
+              color: '#CBD5E1',
               lineHeight: 1.6,
               maxWidth: '460px',
-              marginBottom: '2.5rem',
+              marginBottom: '2.25rem',
             }}
           >
-            One intelligent workspace for managing the complete research lifecycle.
+            One connected workspace for research projects, faculty collaboration,
+            academic knowledge and intellectual property workflows.
           </p>
 
-          {/* Research Lifecycle with Glowing Connection Lines */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxWidth: '380px' }}>
-            {lifecycleSteps.map((step, idx) => {
-              const Icon = step.icon;
-              const isLast = idx === lifecycleSteps.length - 1;
-              return (
-                <div key={step.title} style={{ position: 'relative' }}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.85rem',
-                      padding: '0.65rem 0.95rem',
-                      borderRadius: 'var(--radius-md)',
-                      backgroundColor: 'rgba(11, 31, 58, 0.6)',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
-                      backdropFilter: 'blur(8px)',
-                      boxShadow: `0 0 15px ${step.glow}15`,
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: '6px',
-                        background: `${step.glow}25`,
-                        color: step.glow,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        flexShrink: 0,
-                      }}
-                    >
-                      <Icon size={15} />
-                    </div>
-                    <div>
-                      <div style={{ fontSize: '0.8125rem', fontWeight: 800, letterSpacing: '0.04em', color: '#FFFFFF' }}>
-                        {step.title}
-                      </div>
-                      <div style={{ fontSize: '0.6875rem', color: '#94A3B8' }}>
-                        {step.desc}
-                      </div>
-                    </div>
-                  </div>
-
-                  {!isLast && (
-                    <div
-                      style={{
-                        width: '2px',
-                        height: '10px',
-                        background: 'linear-gradient(to bottom, rgba(34, 211, 238, 0.6), rgba(36, 87, 214, 0.6))',
-                        marginLeft: '23px',
-                        boxShadow: '0 0 8px rgba(34, 211, 238, 0.5)',
-                      }}
-                    />
-                  )}
+          {/* 3 Compact Feature Highlights */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', maxWidth: '460px' }}>
+            {/* Feature 01 */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.95rem',
+                padding: '0.95rem 1.15rem',
+                borderRadius: '12px',
+                backgroundColor: 'rgba(23, 39, 71, 0.65)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                transition: 'all var(--transition-fast)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(23, 39, 71, 0.95)';
+                e.currentTarget.style.borderColor = 'rgba(66, 104, 232, 0.35)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(23, 39, 71, 0.65)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+              }}
+            >
+              <div
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: '10px',
+                  backgroundColor: 'rgba(66, 104, 232, 0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  color: '#36BFFA',
+                }}
+              >
+                <FolderGit2 size={17} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.84rem', fontWeight: 700, color: '#FFFFFF', letterSpacing: '0.01em' }}>
+                  01 — Research Projects
                 </div>
-              );
-            })}
+                <div style={{ fontSize: '0.775rem', color: '#94A3B8', marginTop: '0.2rem', lineHeight: 1.45 }}>
+                  Organize project information, milestones and deliverables in one workspace.
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 02 */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.95rem',
+                padding: '0.95rem 1.15rem',
+                borderRadius: '12px',
+                backgroundColor: 'rgba(23, 39, 71, 0.65)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                transition: 'all var(--transition-fast)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(23, 39, 71, 0.95)';
+                e.currentTarget.style.borderColor = 'rgba(13, 153, 112, 0.35)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(23, 39, 71, 0.65)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+              }}
+            >
+              <div
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: '10px',
+                  backgroundColor: 'rgba(13, 153, 112, 0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  color: '#34D399',
+                }}
+              >
+                <Users size={17} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.84rem', fontWeight: 700, color: '#FFFFFF', letterSpacing: '0.01em' }}>
+                  02 — Faculty Collaboration
+                </div>
+                <div style={{ fontSize: '0.775rem', color: '#94A3B8', marginTop: '0.2rem', lineHeight: 1.45 }}>
+                  Keep reviews, feedback and progress updates connected to each project.
+                </div>
+              </div>
+            </div>
+
+            {/* Feature 03 */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.95rem',
+                padding: '0.95rem 1.15rem',
+                borderRadius: '12px',
+                backgroundColor: 'rgba(23, 39, 71, 0.65)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                transition: 'all var(--transition-fast)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(23, 39, 71, 0.95)';
+                e.currentTarget.style.borderColor = 'rgba(54, 191, 250, 0.35)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(23, 39, 71, 0.65)';
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+              }}
+            >
+              <div
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: '10px',
+                  backgroundColor: 'rgba(54, 191, 250, 0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  color: '#36BFFA',
+                }}
+              >
+                <ShieldCheck size={17} />
+              </div>
+              <div>
+                <div style={{ fontSize: '0.84rem', fontWeight: 700, color: '#FFFFFF', letterSpacing: '0.01em' }}>
+                  03 — Research & IP Tracking
+                </div>
+                <div style={{ fontSize: '0.775rem', color: '#94A3B8', marginTop: '0.2rem', lineHeight: 1.45 }}>
+                  Maintain visibility into research documentation and disclosure workflows.
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Footer */}
-        <div style={{ position: 'relative', zIndex: 2, fontSize: '0.75rem', color: '#64748B' }}>
-          © {new Date().getFullYear()} Automated Campus Research Management (ACRM). All rights reserved.
+        {/* Left Panel Footer */}
+        <div
+          style={{
+            position: 'relative',
+            zIndex: 2,
+            fontSize: '0.75rem',
+            color: '#66748B',
+            fontWeight: 500,
+          }}
+        >
+          ACRM · Research Management Platform
         </div>
-      </div>
+      </aside>
 
       {/* =========================================================================
-          RIGHT 50%: PREMIUM LIGHT BACKGROUND #F4F7FB & AUTHENTICATION PANEL
+          RIGHT AUTHENTICATION PANEL: CLEAN, BALANCED WHITE SURFACE
           ========================================================================= */}
-      <div
+      <main
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           padding: '3rem 2.5rem',
-          backgroundColor: '#F4F7FB',
+          backgroundColor: '#F6F8FC',
         }}
+        className="acr-auth-right-panel"
       >
         <div
           style={{
             width: '100%',
-            maxWidth: '480px',
-            padding: '3rem 2.75rem',
-            background: '#FFFFFF',
-            borderRadius: '20px',
-            boxShadow: '0 20px 45px -10px rgba(7, 20, 38, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05)',
+            maxWidth: '460px',
+            padding: '2.75rem 2.5rem',
+            backgroundColor: '#FFFFFF',
+            borderRadius: '16px',
             border: '1px solid #E2E8F0',
+            boxShadow: '0 4px 16px -2px rgba(16, 27, 53, 0.06), 0 2px 6px -2px rgba(16, 27, 53, 0.03)',
           }}
         >
           {/* Header */}
@@ -274,23 +465,32 @@ export const SignInPage: React.FC = () => {
             <h2
               style={{
                 fontFamily: 'var(--font-display)',
-                fontSize: '1.85rem',
+                fontSize: '1.75rem',
                 fontWeight: 800,
-                letterSpacing: '-0.02em',
-                color: '#0B1220',
+                color: '#172033',
+                letterSpacing: '-0.025em',
+                lineHeight: 1.2,
               }}
             >
-              Welcome back
+              Welcome back.
             </h2>
-            <p style={{ fontSize: '0.875rem', color: '#64748B', marginTop: '0.35rem' }}>
-              Sign in to your ACRM workspace
+            <p
+              style={{
+                fontSize: '0.875rem',
+                color: '#66748B',
+                marginTop: '0.35rem',
+                lineHeight: 1.5,
+              }}
+            >
+              Sign in to continue to your research workspace.
             </p>
           </div>
 
+          {/* Form-Level Error Message */}
           {errorMessage && (
             <div
               style={{
-                padding: '0.85rem 1rem',
+                padding: '0.75rem 1rem',
                 backgroundColor: 'var(--danger-bg)',
                 border: '1px solid var(--danger-border)',
                 borderRadius: '10px',
@@ -298,154 +498,294 @@ export const SignInPage: React.FC = () => {
                 fontSize: '0.8125rem',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.65rem',
+                gap: '0.6rem',
                 marginBottom: '1.5rem',
+                lineHeight: 1.45,
               }}
+              role="alert"
             >
-              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+              <AlertCircle size={16} style={{ flexShrink: 0, color: 'var(--danger-solid)' }} />
               <span>{errorMessage}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.35rem' }}>
-            <div>
-              <label className="acr-label" htmlFor="email-input">
-                Email address
+          {/* Sign In Form */}
+          <form onSubmit={handleSubmit} noValidate>
+            {/* Institutional Email Field */}
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label
+                htmlFor="signin-email"
+                style={{
+                  display: 'block',
+                  fontSize: '0.8125rem',
+                  fontWeight: 600,
+                  color: '#172033',
+                  marginBottom: '0.4rem',
+                }}
+              >
+                Institutional email
               </label>
               <input
-                id="email-input"
+                id="signin-email"
                 type="email"
                 className="acr-input"
-                placeholder="name@university.edu"
+                placeholder="you@institution.edu"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (emailError) setEmailError(null);
+                }}
+                disabled={isLoading}
                 required
                 autoComplete="email"
-                style={{ height: '46px', fontSize: '0.9rem' }}
+                style={{
+                  height: '44px',
+                  borderRadius: '10px',
+                  borderColor: emailError ? 'var(--danger-solid)' : undefined,
+                }}
               />
+              {emailError && (
+                <div
+                  style={{
+                    fontSize: '0.75rem',
+                    color: 'var(--danger-solid)',
+                    marginTop: '0.35rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                  }}
+                >
+                  <AlertCircle size={12} />
+                  <span>{emailError}</span>
+                </div>
+              )}
             </div>
 
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-                <label className="acr-label" htmlFor="password-input" style={{ marginBottom: 0 }}>
+            {/* Password Field */}
+            <div style={{ marginBottom: '1.25rem' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '0.4rem',
+                }}
+              >
+                <label
+                  htmlFor="signin-password"
+                  style={{
+                    fontSize: '0.8125rem',
+                    fontWeight: 600,
+                    color: '#172033',
+                  }}
+                >
                   Password
                 </label>
-                <Link to="/forgot-password" style={{ color: 'var(--color-royal-blue)', fontSize: '0.75rem', fontWeight: 600 }}>
+                <Link
+                  to="/forgot-password"
+                  style={{
+                    fontSize: '0.75rem',
+                    color: '#4268E8',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                  }}
+                >
                   Forgot password?
                 </Link>
               </div>
+
               <div style={{ position: 'relative' }}>
                 <input
-                  id="password-input"
+                  id="signin-password"
                   type={showPassword ? 'text' : 'password'}
                   className="acr-input"
-                  placeholder="••••••••••••"
+                  placeholder="Enter your password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (passwordError) setPasswordError(null);
+                  }}
+                  disabled={isLoading}
                   required
                   autoComplete="current-password"
-                  style={{ height: '46px', fontSize: '0.9rem', paddingRight: '2.75rem' }}
+                  style={{
+                    height: '44px',
+                    borderRadius: '10px',
+                    paddingRight: '2.5rem',
+                    borderColor: passwordError ? 'var(--danger-solid)' : undefined,
+                  }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   style={{
                     position: 'absolute',
-                    right: '12px',
+                    right: '0.75rem',
                     top: '50%',
                     transform: 'translateY(-50%)',
-                    background: 'transparent',
+                    background: 'none',
                     border: 'none',
+                    color: '#66748B',
                     cursor: 'pointer',
-                    color: '#64748B',
                     display: 'flex',
                     alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: 0,
                   }}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+              {passwordError && (
+                <div
+                  style={{
+                    fontSize: '0.75rem',
+                    color: 'var(--danger-solid)',
+                    marginTop: '0.35rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                  }}
+                >
+                  <AlertCircle size={12} />
+                  <span>{passwordError}</span>
+                </div>
+              )}
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', cursor: 'pointer', fontSize: '0.8125rem', color: '#475569' }}>
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  style={{ accentColor: 'var(--color-royal-blue)' }}
-                />
-                <span>Remember me</span>
+            {/* Remember Me Checkbox */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                marginBottom: '1.5rem',
+              }}
+            >
+              <input
+                id="rememberMe"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                disabled={isLoading}
+                style={{
+                  width: '16px',
+                  height: '16px',
+                  accentColor: '#4268E8',
+                  cursor: 'pointer',
+                  marginRight: '0.55rem',
+                }}
+              />
+              <label
+                htmlFor="rememberMe"
+                style={{
+                  fontSize: '0.8125rem',
+                  color: '#66748B',
+                  cursor: 'pointer',
+                  userSelect: 'none',
+                }}
+              >
+                Remember me
               </label>
             </div>
 
+            {/* Primary Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
-              className="acr-btn acr-btn-primary acr-btn-submit-arrow"
+              className="acr-btn acr-btn-primary"
               style={{
                 width: '100%',
-                height: '48px',
-                fontSize: '0.9375rem',
-                fontWeight: 700,
-                justifyContent: 'center',
+                height: '44px',
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                backgroundColor: '#4268E8',
+                borderColor: '#4268E8',
                 borderRadius: '10px',
-                letterSpacing: '0.04em',
               }}
             >
-              <span>{isLoading ? 'SIGNING IN...' : 'SIGN IN'}</span>
-              {!isLoading && <ArrowRight size={17} className="arrow-icon" />}
+              {isLoading ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div
+                    style={{
+                      width: 16,
+                      height: 16,
+                      border: '2px solid rgba(255, 255, 255, 0.4)',
+                      borderTopColor: '#FFFFFF',
+                      borderRadius: '50%',
+                      animation: 'spin 0.8s linear infinite',
+                    }}
+                  />
+                  <span>Signing In...</span>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span>Sign in to ACRM →</span>
+                </div>
+              )}
             </button>
           </form>
 
-          {/* Development Quick Role Switcher */}
+          {/* Conditional Alternative Authentication (Google) */}
+          {isGoogleAuthConfigured && (
+            <>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  margin: '1.5rem 0',
+                }}
+              >
+                <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
+                <span
+                  style={{
+                    padding: '0 0.85rem',
+                    fontSize: '0.72rem',
+                    color: '#94A3B8',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                    fontWeight: 600,
+                  }}
+                >
+                  Or continue with
+                </span>
+                <div style={{ flex: 1, height: '1px', backgroundColor: '#E2E8F0' }} />
+              </div>
+
+              <div style={{ marginBottom: '1.25rem' }}>
+                <GoogleAuthButton
+                  buttonText="Sign in with Google"
+                  onError={(err) => setErrorMessage(err)}
+                />
+              </div>
+            </>
+          )}
+
+          {/* Account Footer */}
           <div
             style={{
-              marginTop: '2rem',
-              paddingTop: '1.35rem',
-              borderTop: '1px solid #E2E8F0',
-              fontSize: '0.75rem',
               textAlign: 'center',
+              paddingTop: '1.25rem',
+              fontSize: '0.8125rem',
+              color: '#66748B',
+              marginTop: isGoogleAuthConfigured ? '0' : '1.25rem',
+              borderTop: isGoogleAuthConfigured ? 'none' : '1px solid #E2E8F0',
             }}
           >
-            <div style={{ color: '#64748B', marginBottom: '0.65rem', fontWeight: 600 }}>
-              Quick Credentials (Development):
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-              <button
-                type="button"
-                onClick={() => fillCredentials('student')}
-                className="acr-btn acr-btn-secondary acr-btn-sm"
-              >
-                Student
-              </button>
-              <button
-                type="button"
-                onClick={() => fillCredentials('faculty')}
-                className="acr-btn acr-btn-secondary acr-btn-sm"
-              >
-                Faculty
-              </button>
-              <button
-                type="button"
-                onClick={() => fillCredentials('admin')}
-                className="acr-btn acr-btn-secondary acr-btn-sm"
-              >
-                Admin
-              </button>
-            </div>
-          </div>
-
-          {/* New to ACRM? */}
-          <div style={{ marginTop: '1.75rem', textAlign: 'center', fontSize: '0.85rem', color: '#475569' }}>
             New to ACRM?{' '}
-            <Link to="/sign-up" style={{ color: 'var(--color-royal-blue)', fontWeight: 700 }}>
+            <Link
+              to="/sign-up"
+              style={{
+                color: '#4268E8',
+                fontWeight: 600,
+                textDecoration: 'none',
+              }}
+            >
               Create an account
             </Link>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

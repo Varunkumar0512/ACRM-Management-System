@@ -10,6 +10,7 @@ import { Input } from '../../components/ui/Input';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { useToast } from '../../hooks/useToast';
 import { LifeBuoy, PlusCircle, MessageSquare, ArrowRight, Send } from 'lucide-react';
+import { PageHeader } from '../../components/dashboard';
 
 export const SupportCenterPage: React.FC = () => {
   const { user } = useAuth();
@@ -101,27 +102,19 @@ export const SupportCenterPage: React.FC = () => {
 
   return (
     <div>
-      <Breadcrumbs
-        items={[
+      <PageHeader
+        title="Academic Support & Campus Helpdesk"
+        subtitle="Submit queries regarding project approval, faculty guidance requests, compute quotas, or institutional documentation"
+        breadcrumbs={[
           { label: 'Dashboard', path: '/dashboard' },
-          { label: 'Campus Support & Helpdesk' },
+          { label: 'Support Desk' },
         ]}
+        actions={
+          <Button variant="primary" onClick={() => setIsModalOpen(true)} icon={<PlusCircle size={15} />}>
+            Submit Support Ticket
+          </Button>
+        }
       />
-
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-            Academic Support & Campus Helpdesk
-          </h1>
-          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-            Submit queries regarding project approval, faculty guidance requests, compute quotas, or institutional documentation
-          </p>
-        </div>
-
-        <Button variant="primary" onClick={() => setIsModalOpen(true)} icon={<PlusCircle size={16} />}>
-          Submit Support Ticket
-        </Button>
-      </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: selectedTicket ? '1fr 1fr' : '1fr', gap: '1.5rem' }}>
         {/* Ticket List Table */}

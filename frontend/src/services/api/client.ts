@@ -28,7 +28,11 @@ apiClient.interceptors.response.use(
     const originalRequest: any = error.config;
 
     // Skip refresh token request itself to avoid infinite loop
-    if (originalRequest.url?.includes('/auth/refresh') || originalRequest.url?.includes('/auth/sign-in')) {
+    if (
+      originalRequest.url?.includes('/auth/refresh') ||
+      originalRequest.url?.includes('/auth/sign-in') ||
+      originalRequest.url?.includes('/auth/google')
+    ) {
       return Promise.reject(error);
     }
 

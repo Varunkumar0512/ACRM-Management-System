@@ -1,46 +1,39 @@
 import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { Button } from '../../components/ui/Button';
 import {
   AlertCircle,
   Eye,
   EyeOff,
   CheckCircle2,
-  ShieldCheck,
+  Compass,
   ArrowRight,
-  ArrowLeft,
-  Check,
   GraduationCap,
   Users,
-  Lock,
-  User,
-  BookOpen,
+  ShieldCheck,
+  Check,
 } from 'lucide-react';
+import { GoogleAuthButton } from '../../components/auth/GoogleAuthButton';
 
 export const SignUpPage: React.FC = () => {
   const { signUpStudent, signUpFaculty } = useAuth();
   const navigate = useNavigate();
 
-  // Multi-step State (1: Personal, 2: Academic, 3: Security)
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
-
   // Form State
+  const [role, setRole] = useState<'STUDENT' | 'FACULTY'>('STUDENT');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
 
-  const [role, setRole] = useState<'STUDENT' | 'FACULTY'>('STUDENT');
   const [department, setDepartment] = useState('Computer Science & Engineering');
-  const [technicalSkills, setTechnicalSkills] = useState('Distributed Systems, AI/ML');
   const [idNumber, setIdNumber] = useState('');
-  const [programOrDesignation, setProgramOrDesignation] = useState('Bachelor of Technology');
+  const [programOrDesignation, setProgramOrDesignation] = useState('');
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -55,71 +48,30 @@ export const SignUpPage: React.FC = () => {
     const hasMinLen = password.length >= 8;
     const hasUpper = /[A-Z]/.test(password);
     const hasNumber = /[0-9]/.test(password);
-    const hasSpecial = /[^A-Za-z0-9]/.test(password);
-
-    let score = 0;
-    if (hasMinLen) score++;
-    if (hasUpper) score++;
-    if (hasNumber) score++;
-    if (hasSpecial) score++;
-
-    let label = 'Weak';
-    let color = 'var(--danger-solid)';
-    if (score >= 4) {
-      label = 'Strong';
-      color = 'var(--success-solid)';
-    } else if (score >= 3) {
-      label = 'Good';
-      color = 'var(--color-royal-blue)';
-    } else if (score >= 2) {
-      label = 'Fair';
-      color = 'var(--warning-solid)';
-    }
-
     const matchesConfirm = confirmPassword ? password === confirmPassword : true;
 
     return {
       hasMinLen,
       hasUpper,
       hasNumber,
-      hasSpecial,
-      score,
-      label,
-      color,
       matchesConfirm,
+      isValid: hasMinLen && hasUpper && hasNumber && password === confirmPassword,
     };
   }, [password, confirmPassword]);
 
-  // Step 1 Validation & Next
-  const handleNextFromStep1 = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+
     if (!fullName.trim() || !email.trim()) {
       setErrorMessage('Please enter both your full name and institutional email.');
       return;
     }
+
     if (!email.includes('@') || !email.includes('.')) {
       setErrorMessage('Please provide a valid institutional email address.');
       return;
     }
-    setCurrentStep(2);
-  };
-
-  // Step 2 Validation & Next
-  const handleNextFromStep2 = (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage(null);
-    if (!department) {
-      setErrorMessage('Please select your academic department.');
-      return;
-    }
-    setCurrentStep(3);
-  };
-
-  // Step 3 Submission
-  const handleFinalSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage(null);
 
     if (password !== confirmPassword) {
       setErrorMessage('Passwords do not match. Please verify your password confirmation.');
@@ -134,11 +86,6 @@ export const SignUpPage: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const skillsArray = technicalSkills
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
-
       let response: any;
       if (role === 'STUDENT') {
         response = await signUpStudent({
@@ -150,7 +97,7 @@ export const SignUpPage: React.FC = () => {
           program: programOrDesignation || 'Bachelor of Technology',
           yearOfStudy: 4,
           phone: phone.trim() || undefined,
-          researchInterests: skillsArray.length > 0 ? skillsArray : ['Artificial Intelligence'],
+          researchInterests: ['Artificial Intelligence', 'Campus Research'],
         });
       } else {
         response = await signUpFaculty({
@@ -160,8 +107,8 @@ export const SignUpPage: React.FC = () => {
           employeeId: idNumber.trim() || `FAC-${Date.now().toString().slice(-4)}`,
           designation: programOrDesignation || 'Associate Professor',
           department,
-          experienceYears: 8,
-          areasOfExpertise: skillsArray.length > 0 ? skillsArray : ['Computer Science'],
+          experienceYears: 6,
+          areasOfExpertise: ['Computer Science', 'Data Systems'],
           phone: phone.trim() || undefined,
         });
       }
@@ -192,96 +139,86 @@ export const SignUpPage: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: '#F4F7FB',
+          backgroundColor: '#F7F9FC',
           padding: '2rem 1.5rem',
         }}
       >
         <div
-          className="acr-card"
           style={{
             width: '100%',
-            maxWidth: '520px',
-            padding: '3rem 2.5rem',
+            maxWidth: '500px',
+            padding: '2.75rem 2.5rem',
+            backgroundColor: '#FFFFFF',
+            borderRadius: '14px',
+            border: '1px solid #E2E8F0',
+            boxShadow: '0 4px 12px -2px rgba(20, 33, 61, 0.07)',
             textAlign: 'center',
-            borderRadius: '20px',
-            boxShadow: 'var(--shadow-xl)',
           }}
         >
           <div
             style={{
-              width: 60,
-              height: 60,
+              width: 56,
+              height: 56,
               borderRadius: '50%',
-              backgroundColor: 'var(--success-bg)',
-              color: 'var(--success-solid)',
-              border: '1px solid var(--success-border)',
+              backgroundColor: '#ECFDF5',
+              color: '#10B981',
+              border: '1px solid #A7F3D0',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              margin: '0 auto 1.5rem',
+              margin: '0 auto 1.25rem',
             }}
           >
-            <CheckCircle2 size={34} />
+            <CheckCircle2 size={32} />
           </div>
 
-          <h2 style={{ fontSize: '1.65rem', fontWeight: 800, color: '#0B1220', marginBottom: '0.5rem', fontFamily: 'var(--font-display)' }}>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0F172A', marginBottom: '0.4rem', fontFamily: 'var(--font-display)' }}>
             Account Created Successfully
           </h2>
-          <p style={{ fontSize: '0.9rem', color: '#64748B', marginBottom: '1.75rem', lineHeight: 1.5 }}>
-            Welcome to ACRM, <strong>{registrationSuccess.fullName}</strong>. Your academic profile has been securely provisioned.
+          <p style={{ fontSize: '0.875rem', color: '#64748B', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+            Welcome to ACRM, <strong>{registrationSuccess.fullName}</strong>. Your academic profile has been provisioned.
           </p>
 
           <div
             style={{
-              padding: '1.25rem',
-              backgroundColor: 'var(--bg-subtle)',
-              borderRadius: '12px',
-              border: '1px solid var(--border-subtle)',
-              marginBottom: '2rem',
+              padding: '1.1rem',
+              backgroundColor: '#F8FAFC',
+              borderRadius: '10px',
+              border: '1px solid #E2E8F0',
               textAlign: 'left',
-              fontSize: '0.85rem',
+              fontSize: '0.8125rem',
+              color: '#475569',
+              marginBottom: '1.5rem',
             }}
           >
-            <div style={{ fontWeight: 700, marginBottom: '0.35rem', color: '#0B1220' }}>
-              Institutional Account:
+            <div style={{ fontWeight: 700, color: '#0F172A', marginBottom: '0.25rem' }}>
+              Next Step: Verify Your Email
             </div>
-            <div style={{ color: 'var(--color-royal-blue)', fontFamily: 'var(--font-mono)', marginBottom: '0.65rem' }}>
-              {registrationSuccess.email}
-            </div>
-            <div style={{ color: '#64748B', fontSize: '0.8rem', lineHeight: 1.5 }}>
-              In this environment, you can activate and verify your institutional credentials immediately using the button below.
-            </div>
-          </div>
+            <p style={{ margin: 0, lineHeight: 1.45 }}>
+              A verification message has been dispatched to <strong>{registrationSuccess.email}</strong>. Please follow the instructions to activate your access.
+            </p>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            {registrationSuccess.previewToken ? (
-              <Link
-                to={`/verify-email?token=${registrationSuccess.previewToken}`}
-                className="acr-btn acr-btn-primary"
-                style={{ width: '100%', height: '46px', fontSize: '0.9rem', justifyContent: 'center' }}
-              >
-                <ShieldCheck size={16} />
-                <span>Verify & Activate Account</span>
-              </Link>
-            ) : (
-              <Link
-                to="/dashboard"
-                className="acr-btn acr-btn-primary"
-                style={{ width: '100%', height: '46px', fontSize: '0.9rem', justifyContent: 'center' }}
-              >
-                <span>Enter ACRM Workspace</span>
-                <ArrowRight size={16} />
-              </Link>
+            {registrationSuccess.previewToken && (
+              <div style={{ marginTop: '0.85rem', paddingTop: '0.85rem', borderTop: '1px solid #E2E8F0' }}>
+                <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#4169E1' }}>Development Mode Token:</div>
+                <Link
+                  to={`/verify-email?token=${registrationSuccess.previewToken}`}
+                  style={{ fontSize: '0.75rem', color: '#2563EB', wordBreak: 'break-all', fontWeight: 600 }}
+                >
+                  Click here to verify email directly &rarr;
+                </Link>
+              </div>
             )}
-
-            <Link
-              to="/sign-in"
-              className="acr-btn acr-btn-ghost"
-              style={{ width: '100%', justifyContent: 'center' }}
-            >
-              Sign In to Account
-            </Link>
           </div>
+
+          <Link
+            to="/sign-in"
+            className="acr-btn acr-btn-primary"
+            style={{ width: '100%', height: '42px', backgroundColor: '#4268E8', borderColor: '#4268E8' }}
+          >
+            <span>Proceed to Sign In</span>
+            <ArrowRight size={15} />
+          </Link>
         </div>
       </div>
     );
@@ -291,503 +228,509 @@ export const SignUpPage: React.FC = () => {
     <div
       style={{
         minHeight: '100vh',
-        backgroundColor: '#F4F7FB',
-        padding: '3rem 1.5rem',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        display: 'grid',
+        gridTemplateColumns: '1fr 1.25fr',
+        backgroundColor: '#F6F8FC',
       }}
+      className="acr-auth-layout"
     >
+      {/* =========================================================================
+          LEFT PANEL: DEEP NAVY #101B35
+          ========================================================================= */}
       <div
         style={{
-          width: '100%',
-          maxWidth: '660px',
-          padding: '3rem 3.25rem',
-          background: '#FFFFFF',
-          borderRadius: '20px',
-          boxShadow: '0 20px 45px -10px rgba(7, 20, 38, 0.1), 0 1px 3px rgba(0, 0, 0, 0.05)',
-          border: '1px solid #E2E8F0',
+          backgroundColor: '#101B35',
+          color: '#FFFFFF',
+          padding: '4rem 4.5rem',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
           position: 'relative',
+          overflow: 'hidden',
+          borderRight: '1px solid rgba(255, 255, 255, 0.08)',
         }}
+        className="acr-auth-left-panel"
       >
-        {/* Brand Crest & Header */}
-        <div style={{ textAlign: 'center', marginBottom: '2.25rem' }}>
-          <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none', color: 'inherit' }}>
-            <img src="/logo.svg" alt="ACRM Logo" style={{ width: 40, height: 40, borderRadius: '8px' }} />
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0B1220', lineHeight: 1.1, fontFamily: 'var(--font-display)' }}>
+        <div style={{ position: 'relative', zIndex: 2 }}>
+          <Link
+            to="/"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+              textDecoration: 'none',
+              color: '#FFFFFF',
+            }}
+          >
+            <div
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: '10px',
+                backgroundColor: '#4268E8',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(66, 104, 232, 0.35)',
+              }}
+            >
+              <Compass size={20} color="#FFFFFF" />
+            </div>
+            <div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#FFFFFF', lineHeight: 1.1 }}>
                 ACRM
               </div>
-              <div style={{ fontSize: '0.6875rem', color: '#64748B', fontWeight: 600 }}>
+              <div style={{ fontSize: '0.65rem', color: '#94A3B8', fontWeight: 600, letterSpacing: '0.04em' }}>
                 AUTOMATED CAMPUS RESEARCH MANAGEMENT
               </div>
             </div>
           </Link>
+        </div>
+
+        <div style={{ position: 'relative', zIndex: 2, margin: '3.5rem 0' }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.25rem 0.75rem',
+              borderRadius: '9999px',
+              backgroundColor: 'rgba(65, 105, 225, 0.2)',
+              border: '1px solid rgba(65, 105, 225, 0.4)',
+              color: '#93C5FD',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              marginBottom: '1.25rem',
+            }}
+          >
+            Academic Registration
+          </div>
 
           <h1
             style={{
               fontFamily: 'var(--font-display)',
-              fontSize: '1.85rem',
+              fontSize: '2.4rem',
               fontWeight: 800,
-              color: '#0B1220',
-              marginTop: '1.5rem',
+              lineHeight: 1.2,
+              color: '#FFFFFF',
+              marginBottom: '0.85rem',
             }}
           >
-            Create your ACRM account
+            Join the Research Community.
           </h1>
-          <p style={{ fontSize: '0.875rem', color: '#64748B', marginTop: '0.35rem' }}>
-            Join a unified platform for research, innovation and collaboration.
+
+          <p
+            style={{
+              fontSize: '0.975rem',
+              color: '#CBD5E1',
+              lineHeight: 1.6,
+              maxWidth: '440px',
+              marginBottom: '2.5rem',
+            }}
+          >
+            Connect student innovation with faculty mentorship and institutional governance.
           </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxWidth: '420px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#CBD5E1', fontSize: '0.85rem' }}>
+              <div style={{ width: 22, height: 22, borderRadius: '50%', backgroundColor: 'rgba(65, 105, 225, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Check size={13} color="#93C5FD" />
+              </div>
+              <span>Role-specific workspaces for scholars and faculty</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#CBD5E1', fontSize: '0.85rem' }}>
+              <div style={{ width: 22, height: 22, borderRadius: '50%', backgroundColor: 'rgba(65, 105, 225, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Check size={13} color="#93C5FD" />
+              </div>
+              <span>Structured milestone sprints with rubric defenses</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#CBD5E1', fontSize: '0.85rem' }}>
+              <div style={{ width: 22, height: 22, borderRadius: '50%', backgroundColor: 'rgba(65, 105, 225, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Check size={13} color="#93C5FD" />
+              </div>
+              <span>Novelty screening and institutional IPR workflows</span>
+            </div>
+          </div>
         </div>
 
-        {/* Multi-Step Indicator */}
+        <div style={{ position: 'relative', zIndex: 2, fontSize: '0.75rem', color: '#64748B' }}>
+          © {new Date().getFullYear()} Automated Campus Research Management (ACRM).
+        </div>
+      </div>
+
+      {/* =========================================================================
+          RIGHT PANEL: REGISTRATION FORM
+          ========================================================================= */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '2.5rem 2rem',
+          backgroundColor: '#F7F9FC',
+          overflowY: 'auto',
+        }}
+        className="acr-auth-right-panel"
+      >
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '1rem',
-            marginBottom: '2.5rem',
-            position: 'relative',
+            width: '100%',
+            maxWidth: '520px',
+            padding: '2.5rem 2.25rem',
+            backgroundColor: '#FFFFFF',
+            borderRadius: '14px',
+            border: '1px solid #E2E8F0',
+            boxShadow: '0 4px 12px -2px rgba(20, 33, 61, 0.07)',
           }}
         >
-          {/* Step 1 Tab */}
-          <div
-            onClick={() => currentStep > 1 && setCurrentStep(1)}
-            style={{
-              textAlign: 'center',
-              cursor: currentStep > 1 ? 'pointer' : 'default',
-            }}
-          >
-            <div
+          {/* Header */}
+          <div style={{ marginBottom: '1.75rem' }}>
+            <h2
               style={{
-                fontSize: '0.72rem',
+                fontFamily: 'var(--font-display)',
+                fontSize: '1.75rem',
                 fontWeight: 800,
-                letterSpacing: '0.06em',
-                textTransform: 'uppercase',
-                color: currentStep === 1 ? 'var(--color-royal-blue)' : currentStep > 1 ? '#10B981' : '#94A3B8',
-                marginBottom: '0.4rem',
+                color: '#0F172A',
+                letterSpacing: '-0.02em',
               }}
             >
-              01 Personal
-            </div>
-            <div
-              style={{
-                height: '4px',
-                borderRadius: '9999px',
-                background: currentStep === 1 ? 'var(--color-royal-blue)' : currentStep > 1 ? '#10B981' : '#E2E8F0',
-                transition: 'background var(--transition-normal)',
-              }}
-            />
+              Create Your Account
+            </h2>
+            <p style={{ fontSize: '0.85rem', color: '#64748B', marginTop: '0.35rem' }}>
+              Join your institution’s research community.
+            </p>
           </div>
 
-          {/* Step 2 Tab */}
-          <div
-            onClick={() => currentStep > 2 && setCurrentStep(2)}
-            style={{
-              textAlign: 'center',
-              cursor: currentStep > 2 ? 'pointer' : 'default',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '0.72rem',
-                fontWeight: 800,
-                letterSpacing: '0.06em',
-                textTransform: 'uppercase',
-                color: currentStep === 2 ? 'var(--color-royal-blue)' : currentStep > 2 ? '#10B981' : '#94A3B8',
-                marginBottom: '0.4rem',
-              }}
-            >
-              02 Academic
-            </div>
-            <div
-              style={{
-                height: '4px',
-                borderRadius: '9999px',
-                background: currentStep === 2 ? 'var(--color-royal-blue)' : currentStep > 2 ? '#10B981' : '#E2E8F0',
-                transition: 'background var(--transition-normal)',
-              }}
-            />
-          </div>
-
-          {/* Step 3 Tab */}
-          <div style={{ textAlign: 'center' }}>
-            <div
-              style={{
-                fontSize: '0.72rem',
-                fontWeight: 800,
-                letterSpacing: '0.06em',
-                textTransform: 'uppercase',
-                color: currentStep === 3 ? 'var(--color-royal-blue)' : '#94A3B8',
-                marginBottom: '0.4rem',
-              }}
-            >
-              03 Security
-            </div>
-            <div
-              style={{
-                height: '4px',
-                borderRadius: '9999px',
-                background: currentStep === 3 ? 'var(--color-royal-blue)' : '#E2E8F0',
-                transition: 'background var(--transition-normal)',
-              }}
-            />
-          </div>
-        </div>
-
-        {errorMessage && (
+          {/* Role Selection Tabs */}
           <div
             style={{
-              padding: '0.85rem 1rem',
-              backgroundColor: 'var(--danger-bg)',
-              border: '1px solid var(--danger-border)',
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '0.5rem',
+              padding: '0.3rem',
+              backgroundColor: '#F1F5F9',
               borderRadius: '10px',
-              color: 'var(--danger-text)',
-              fontSize: '0.8125rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.65rem',
-              marginBottom: '1.75rem',
+              marginBottom: '1.5rem',
             }}
           >
-            <AlertCircle size={16} style={{ flexShrink: 0 }} />
-            <span>{errorMessage}</span>
-          </div>
-        )}
-
-        {/* STEP 1: PERSONAL INFORMATION */}
-        {currentStep === 1 && (
-          <form onSubmit={handleNextFromStep1} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div>
-              <label className="acr-label" htmlFor="fullName">Full Name *</label>
-              <input
-                id="fullName"
-                type="text"
-                className="acr-input"
-                placeholder="Dr. Eleanor Vance / Alex Mercer"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                required
-                style={{ height: '46px' }}
-              />
-            </div>
-
-            <div>
-              <label className="acr-label" htmlFor="email">Email Address *</label>
-              <input
-                id="email"
-                type="email"
-                className="acr-input"
-                placeholder="name@university.edu"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-                style={{ height: '46px' }}
-              />
-            </div>
-
-            <div>
-              <label className="acr-label" htmlFor="phone">Contact Phone</label>
-              <input
-                id="phone"
-                type="tel"
-                className="acr-input"
-                placeholder="+1 (555) 019-2834"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                style={{ height: '46px' }}
-              />
-            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setRole('STUDENT');
+                setProgramOrDesignation('Bachelor of Technology');
+              }}
+              style={{
+                padding: '0.6rem 0.85rem',
+                fontSize: '0.8125rem',
+                fontWeight: 700,
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                backgroundColor: role === 'STUDENT' ? '#FFFFFF' : 'transparent',
+                color: role === 'STUDENT' ? '#0F172A' : '#64748B',
+                boxShadow: role === 'STUDENT' ? '0 1px 3px rgba(0, 0, 0, 0.08)' : 'none',
+                transition: 'all var(--transition-fast)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.45rem',
+              }}
+            >
+              <Users size={15} color={role === 'STUDENT' ? '#4268E8' : '#64748B'} />
+              <span>Student Scholar</span>
+            </button>
 
             <button
-              type="submit"
-              className="acr-btn acr-btn-primary acr-btn-submit-arrow"
+              type="button"
+              onClick={() => {
+                setRole('FACULTY');
+                setProgramOrDesignation('Associate Professor');
+              }}
               style={{
-                width: '100%',
-                height: '48px',
-                fontSize: '0.9375rem',
+                padding: '0.6rem 0.85rem',
+                fontSize: '0.8125rem',
                 fontWeight: 700,
-                marginTop: '0.75rem',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                backgroundColor: role === 'FACULTY' ? '#FFFFFF' : 'transparent',
+                color: role === 'FACULTY' ? '#0F172A' : '#64748B',
+                boxShadow: role === 'FACULTY' ? '0 1px 3px rgba(0, 0, 0, 0.08)' : 'none',
+                transition: 'all var(--transition-fast)',
+                display: 'flex',
+                alignItems: 'center',
                 justifyContent: 'center',
-                borderRadius: '10px',
+                gap: '0.45rem',
               }}
             >
-              <span>Continue to Academic Info</span>
-              <ArrowRight size={17} className="arrow-icon" />
+              <GraduationCap size={15} color={role === 'FACULTY' ? '#4268E8' : '#64748B'} />
+              <span>Faculty Mentor</span>
             </button>
-          </form>
-        )}
+          </div>
 
-        {/* STEP 2: ACADEMIC INFORMATION */}
-        {currentStep === 2 && (
-          <form onSubmit={handleNextFromStep2} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            {/* Role Switcher */}
-            <div>
-              <label className="acr-label">Account Role *</label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRole('STUDENT');
-                    setProgramOrDesignation('Bachelor of Technology');
-                  }}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.75rem',
-                    padding: '0.85rem 1rem',
-                    borderRadius: '10px',
-                    border: `2px solid ${role === 'STUDENT' ? 'var(--color-royal-blue)' : '#E2E8F0'}`,
-                    background: role === 'STUDENT' ? 'var(--primary-50)' : '#FFFFFF',
-                    color: role === 'STUDENT' ? 'var(--color-royal-blue)' : '#475569',
-                    cursor: 'pointer',
-                    fontWeight: 700,
-                    fontSize: '0.8125rem',
-                    transition: 'all var(--transition-fast)',
-                  }}
-                >
-                  <Users size={18} color={role === 'STUDENT' ? 'var(--color-royal-blue)' : '#64748B'} />
-                  <span>Student Scholar</span>
-                </button>
+          {/* Error Message */}
+          {errorMessage && (
+            <div
+              style={{
+                padding: '0.75rem 1rem',
+                backgroundColor: 'var(--danger-bg)',
+                border: '1px solid var(--danger-border)',
+                borderRadius: '8px',
+                color: 'var(--danger-text)',
+                fontSize: '0.8125rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                marginBottom: '1.25rem',
+              }}
+            >
+              <AlertCircle size={16} style={{ flexShrink: 0 }} />
+              <span>{errorMessage}</span>
+            </div>
+          )}
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setRole('FACULTY');
-                    setProgramOrDesignation('Associate Professor');
-                  }}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.75rem',
-                    padding: '0.85rem 1rem',
-                    borderRadius: '10px',
-                    border: `2px solid ${role === 'FACULTY' ? 'var(--color-royal-blue)' : '#E2E8F0'}`,
-                    background: role === 'FACULTY' ? 'var(--primary-50)' : '#FFFFFF',
-                    color: role === 'FACULTY' ? 'var(--color-royal-blue)' : '#475569',
-                    cursor: 'pointer',
-                    fontWeight: 700,
-                    fontSize: '0.8125rem',
-                    transition: 'all var(--transition-fast)',
-                  }}
+          {/* Form */}
+          <form onSubmit={handleSubmit}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }} className="acr-form-row">
+              <div>
+                <label
+                  htmlFor="signup-fullname"
+                  style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: '#0F172A', marginBottom: '0.35rem' }}
                 >
-                  <GraduationCap size={18} color={role === 'FACULTY' ? 'var(--color-royal-blue)' : '#64748B'} />
-                  <span>Faculty Mentor</span>
-                </button>
+                  Full Name
+                </label>
+                <input
+                  id="signup-fullname"
+                  type="text"
+                  className="acr-input"
+                  placeholder="e.g. Alex Rivera"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                  style={{ height: '40px' }}
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="signup-email"
+                  style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: '#0F172A', marginBottom: '0.35rem' }}
+                >
+                  Institutional Email
+                </label>
+                <input
+                  id="signup-email"
+                  type="email"
+                  className="acr-input"
+                  placeholder="scholar@university.edu"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  style={{ height: '40px' }}
+                />
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }} className="acr-form-row">
               <div>
-                <label className="acr-label" htmlFor="department">Department *</label>
+                <label
+                  htmlFor="signup-department"
+                  style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: '#0F172A', marginBottom: '0.35rem' }}
+                >
+                  Department
+                </label>
                 <select
-                  id="department"
+                  id="signup-department"
                   className="acr-select"
                   value={department}
                   onChange={(e) => setDepartment(e.target.value)}
-                  style={{ height: '46px' }}
+                  style={{ height: '40px' }}
                 >
                   <option value="Computer Science & Engineering">Computer Science & Engineering</option>
-                  <option value="Information Technology">Information Technology</option>
-                  <option value="Electronics & Communication Engineering">Electronics & Communication Engineering</option>
                   <option value="Electrical & Electronics Engineering">Electrical & Electronics Engineering</option>
-                  <option value="Mechanical Engineering">Mechanical Engineering</option>
+                  <option value="Mechanical & Mechatronics">Mechanical & Mechatronics</option>
                   <option value="Biotechnology & Bioengineering">Biotechnology & Bioengineering</option>
-                  <option value="Data Science & Artificial Intelligence">Data Science & Artificial Intelligence</option>
+                  <option value="Data Science & Artificial Intelligence">Data Science & AI</option>
                 </select>
               </div>
 
               <div>
-                <label className="acr-label" htmlFor="idNumber">
-                  {role === 'STUDENT' ? 'Student Registration / Roll No. *' : 'Faculty / Employee ID *'}
+                <label
+                  htmlFor="signup-idnumber"
+                  style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: '#0F172A', marginBottom: '0.35rem' }}
+                >
+                  {role === 'STUDENT' ? 'Student ID Number' : 'Employee ID Number'}
                 </label>
                 <input
-                  id="idNumber"
+                  id="signup-idnumber"
                   type="text"
                   className="acr-input"
-                  placeholder={role === 'STUDENT' ? '2022-CSE-045' : 'FAC-CSE-102'}
+                  placeholder={role === 'STUDENT' ? 'STU-2026-081' : 'FAC-1042'}
                   value={idNumber}
                   onChange={(e) => setIdNumber(e.target.value)}
-                  style={{ height: '46px' }}
+                  style={{ height: '40px' }}
                 />
               </div>
             </div>
 
-            <div>
-              <label className="acr-label" htmlFor="technicalSkills">Technical Skills & Research Interests</label>
+            <div style={{ marginBottom: '1rem' }}>
+              <label
+                htmlFor="signup-designation"
+                style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: '#0F172A', marginBottom: '0.35rem' }}
+              >
+                {role === 'STUDENT' ? 'Academic Program' : 'Academic Designation'}
+              </label>
               <input
-                id="technicalSkills"
+                id="signup-designation"
                 type="text"
                 className="acr-input"
-                placeholder="e.g. Distributed Systems, Machine Learning, Computer Vision"
-                value={technicalSkills}
-                onChange={(e) => setTechnicalSkills(e.target.value)}
-                style={{ height: '46px' }}
+                placeholder={role === 'STUDENT' ? 'Bachelor of Technology (B.Tech)' : 'Associate Professor / Reader'}
+                value={programOrDesignation}
+                onChange={(e) => setProgramOrDesignation(e.target.value)}
+                style={{ height: '40px' }}
               />
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '0.75rem' }}>
-              <button
-                type="button"
-                onClick={() => setCurrentStep(1)}
-                className="acr-btn acr-btn-secondary"
-                style={{ height: '48px', flex: '0 0 110px', borderRadius: '10px' }}
-              >
-                <ArrowLeft size={16} />
-                <span>Back</span>
-              </button>
-              <button
-                type="submit"
-                className="acr-btn acr-btn-primary acr-btn-submit-arrow"
-                style={{ flex: 1, height: '48px', fontSize: '0.9375rem', fontWeight: 700, justifyContent: 'center', borderRadius: '10px' }}
-              >
-                <span>Continue to Security</span>
-                <ArrowRight size={17} className="arrow-icon" />
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* STEP 3: SECURITY */}
-        {currentStep === 3 && (
-          <form onSubmit={handleFinalSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div>
-              <label className="acr-label" htmlFor="password">Password *</label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  className="acr-input"
-                  placeholder="••••••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="new-password"
-                  style={{ height: '46px', paddingRight: '2.75rem' }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  style={{
-                    position: 'absolute',
-                    right: '12px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: '#64748B',
-                  }}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+            {/* Passwords */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }} className="acr-form-row">
+              <div>
+                <label
+                  htmlFor="signup-password"
+                  style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: '#0F172A', marginBottom: '0.35rem' }}
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="acr-label" htmlFor="confirmPassword">Confirm Password *</label>
-              <div style={{ position: 'relative' }}>
-                <input
-                  id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  className="acr-input"
-                  placeholder="••••••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  autoComplete="new-password"
-                  style={{ height: '46px', paddingRight: '2.75rem' }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  style={{
-                    position: 'absolute',
-                    right: '12px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: '#64748B',
-                  }}
-                  aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </div>
-
-            {/* Password Validation Checklist */}
-            {password && (
-              <div
-                style={{
-                  backgroundColor: 'var(--bg-subtle)',
-                  padding: '0.85rem 1.15rem',
-                  borderRadius: '10px',
-                  fontSize: '0.75rem',
-                  border: '1px solid var(--border-subtle)',
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
-                  <span style={{ fontWeight: 600, color: '#475569' }}>Password Strength:</span>
-                  <span style={{ fontWeight: 800, color: passwordValidation.color }}>{passwordValidation.label}</span>
-                </div>
-                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', color: '#64748B' }}>
-                  <span style={{ color: passwordValidation.hasMinLen ? '#10B981' : 'inherit' }}>
-                    {passwordValidation.hasMinLen ? '✓' : '•'} 8+ characters
-                  </span>
-                  <span style={{ color: passwordValidation.hasUpper ? '#10B981' : 'inherit' }}>
-                    {passwordValidation.hasUpper ? '✓' : '•'} Uppercase letter
-                  </span>
-                  <span style={{ color: passwordValidation.hasNumber ? '#10B981' : 'inherit' }}>
-                    {passwordValidation.hasNumber ? '✓' : '•'} Number
-                  </span>
-                  {confirmPassword && (
-                    <span style={{ color: passwordValidation.matchesConfirm ? '#10B981' : '#EF4444' }}>
-                      {passwordValidation.matchesConfirm ? '✓ Passwords match' : '✕ Passwords mismatch'}
-                    </span>
-                  )}
+                  Password
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    id="signup-password"
+                    type={showPassword ? 'text' : 'password'}
+                    className="acr-input"
+                    placeholder="Min 8 chars, 1 uppercase, 1 digit"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    style={{ height: '40px', paddingRight: '2.5rem' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{
+                      position: 'absolute',
+                      right: '0.65rem',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      color: '#94A3B8',
+                      cursor: 'pointer',
+                      padding: 0,
+                    }}
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
               </div>
-            )}
 
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '0.75rem' }}>
-              <button
-                type="button"
-                onClick={() => setCurrentStep(2)}
-                className="acr-btn acr-btn-secondary"
-                style={{ height: '48px', flex: '0 0 110px', borderRadius: '10px' }}
-              >
-                <ArrowLeft size={16} />
-                <span>Back</span>
-              </button>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="acr-btn acr-btn-primary"
-                style={{
-                  flex: 1,
-                  height: '48px',
-                  fontSize: '0.9375rem',
-                  fontWeight: 700,
-                  justifyContent: 'center',
-                  borderRadius: '10px',
-                }}
-              >
-                <span>{isLoading ? 'CREATING ACCOUNT...' : 'Create Account'}</span>
-              </button>
+              <div>
+                <label
+                  htmlFor="signup-confirmpassword"
+                  style={{ display: 'block', fontSize: '0.8125rem', fontWeight: 600, color: '#0F172A', marginBottom: '0.35rem' }}
+                >
+                  Confirm Password
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    id="signup-confirmpassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    className="acr-input"
+                    placeholder="Re-enter password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    style={{ height: '40px', paddingRight: '2.5rem' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    style={{
+                      position: 'absolute',
+                      right: '0.65rem',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none',
+                      border: 'none',
+                      color: '#94A3B8',
+                      cursor: 'pointer',
+                      padding: 0,
+                    }}
+                  >
+                    {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
             </div>
-          </form>
-        )}
 
-        <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.85rem', color: '#475569' }}>
-          Already have an account?{' '}
-          <Link to="/sign-in" style={{ color: 'var(--color-royal-blue)', fontWeight: 700 }}>
-            Sign In
-          </Link>
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="acr-btn acr-btn-primary"
+              style={{
+                width: '100%',
+                height: '44px',
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                backgroundColor: '#4268E8',
+                borderColor: '#4268E8',
+              }}
+            >
+              {isLoading ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div
+                    style={{
+                      width: 16,
+                      height: 16,
+                      border: '2px solid rgba(255, 255, 255, 0.4)',
+                      borderTopColor: '#FFFFFF',
+                      borderRadius: '50%',
+                      animation: 'spin 0.8s linear infinite',
+                    }}
+                  />
+                  <span>Creating Account...</span>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span>Create Account</span>
+                  <ArrowRight size={16} />
+                </div>
+              )}
+            </button>
+          </form>
+
+          {/* Google Auth if configured */}
+          <div style={{ marginTop: '1.25rem' }}>
+            <GoogleAuthButton
+              buttonText="Register with Institutional Google ID"
+              onError={(err) => setErrorMessage(err)}
+            />
+          </div>
+
+          {/* Already have an account link */}
+          <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.8125rem', color: '#66748B' }}>
+            Already have an account?{' '}
+            <Link
+              to="/sign-in"
+              style={{
+                color: '#4268E8',
+                fontWeight: 600,
+                textDecoration: 'none',
+              }}
+            >
+              Sign in
+            </Link>
+          </div>
         </div>
       </div>
     </div>

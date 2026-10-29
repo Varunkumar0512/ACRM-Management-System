@@ -8,6 +8,8 @@ import { Input } from '../../components/ui/Input';
 import { Tabs } from '../../components/ui/Tabs';
 import { useToast } from '../../hooks/useToast';
 import { User, Sun, Moon, Globe, Shield, Bell, CheckCircle2 } from 'lucide-react';
+import { authApi } from '../../services/api/authApi';
+import { PageHeader } from '../../components/dashboard';
 
 export const SettingsPage: React.FC = () => {
   const { user, profile } = useAuth();
@@ -23,39 +25,48 @@ export const SettingsPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
-  const handleSavePassword = (e: React.FormEvent) => {
+  const handleSavePassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (newPassword.length < 8) {
+      toast.error('New password must be at least 8 characters long.');
+      return;
+    }
     if (newPassword !== confirmPassword) {
       toast.error('New passwords do not match.');
       return;
     }
+
     setIsUpdatingPassword(true);
-    setTimeout(() => {
-      setIsUpdatingPassword(false);
+    try {
+      await authApi.changePassword({
+        currentPassword: currentPassword || undefined,
+        newPassword,
+        confirmPassword,
+      });
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
       toast.success('Account security credentials updated successfully.');
-    }, 800);
+    } catch (err: any) {
+      const msg =
+        err.response?.data?.error?.message ||
+        'Failed to update credentials. Please verify your current password.';
+      toast.error(msg);
+    } finally {
+      setIsUpdatingPassword(false);
+    }
   };
 
   return (
     <div style={{ maxWidth: '840px' }}>
-      <Breadcrumbs
-        items={[
+      <PageHeader
+        title="Account Settings & Preferences"
+        subtitle="Manage your personal academic profile, interface themes, language preferences, and security credentials"
+        breadcrumbs={[
           { label: 'Dashboard', path: '/dashboard' },
-          { label: 'Settings & Preferences' },
+          { label: 'Settings' },
         ]}
       />
-
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-          Account Settings & Institutional Preferences
-        </h1>
-        <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
-          Manage your personal academic profile, theme preferences, internationalization, and credentials
-        </p>
-      </div>
 
       <Tabs
         tabs={[
@@ -216,11 +227,12 @@ export const SettingsPage: React.FC = () => {
 
           <form onSubmit={handleSavePassword} style={{ maxWidth: '420px' }}>
             <Input
-              label="Current Password"
+              label={user?.googleId ? 'Current Password (leave blank if setting password for first time)' : 'Current Password'}
               type="password"
+              placeholder="••••••••••••"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              required
+              required={!user?.googleId}
             />
             <Input
               label="New Password"

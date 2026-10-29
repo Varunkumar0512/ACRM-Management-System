@@ -5,6 +5,7 @@ import { ProjectMember } from '../models/ProjectMember.js';
 import { ProjectGuide } from '../models/ProjectGuide.js';
 import { UserRole, ProjectStatus } from '../config/constants.js';
 import { ForbiddenError, NotFoundError } from '../errors/AppError.js';
+import { verifyProjectAccess } from '../utils/projectAuth.js';
 import mongoose from 'mongoose';
 
 export class ProjectController {
@@ -45,9 +46,17 @@ export class ProjectController {
         const guides = await ProjectGuide.find({ facultyId: user.userId, status: 'ACCEPTED' });
         const projectIds = guides.map((g) => g.projectId);
         query._id = { $in: projectIds };
-      } else if (user.role === UserRole.STUDENT) {
-        // Public projects or projects student belongs to
-        query.$or = [{ isPublic: true }, { ownerId: user.userId }];
+      } else if (user.role !== UserRole.ADMIN) {
+        // Enforce confidential project privacy: non-admins only see public or their own/team/guided projects
+        const [memberships, guides] = await Promise.all([
+          ProjectMember.find({ studentId: user.userId, status: 'ACCEPTED' }),
+          ProjectGuide.find({ facultyId: user.userId, status: 'ACCEPTED' }),
+        ]);
+        const userProjectIds = [
+          ...memberships.map((m) => m.projectId),
+          ...guides.map((g) => g.projectId),
+        ];
+        query.$or = [{ isPublic: true }, { ownerId: user.userId }, { _id: { $in: userProjectIds } }];
       }
 
       const result = await projectRepository.list(query, Number(skip) || 0, Number(limit) || 20);
@@ -118,6 +127,8 @@ export class ProjectController {
 
   addMilestone = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      await verifyProjectAccess(req.params.id, req.user!.userId, req.user!.role, true);
+
       const milestone = await projectRepository.createMilestone({
         projectId: new mongoose.Types.ObjectId(req.params.id),
         title: req.body.title,
@@ -141,6 +152,10 @@ export class ProjectController {
 
   updateMilestone = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const existing = await projectRepository.findMilestoneById(req.params.milestoneId);
+      if (!existing) throw new NotFoundError('Milestone not found.');
+      await verifyProjectAccess(existing.projectId.toString(), req.user!.userId, req.user!.role, true);
+
       const updates: any = { ...req.body };
       if (updates.dueDate) updates.dueDate = new Date(updates.dueDate);
       if (updates.status === 'COMPLETED') updates.completionDate = new Date();
@@ -161,6 +176,13 @@ export class ProjectController {
 
   deleteMilestone = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const existing = await projectRepository.findMilestoneById(req.params.milestoneId);
+      if (!existing) throw new NotFoundError('Milestone not found.');
+      const access = await verifyProjectAccess(existing.projectId.toString(), req.user!.userId, req.user!.role, true);
+      if (!access.isOwner && !access.isGuide && !access.isAdmin) {
+        throw new ForbiddenError('Only project owners, faculty guides, or administrators can remove milestones.');
+      }
+
       await projectRepository.deleteMilestone(req.params.milestoneId);
       await projectRepository.calculateProjectProgress(req.params.id);
 
@@ -175,6 +197,8 @@ export class ProjectController {
 
   addComment = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      await verifyProjectAccess(req.params.id, req.user!.userId, req.user!.role, false);
+
       const comment = await projectService.addComment(
         req.params.id,
         { userId: req.user!.userId, role: req.user!.role },
@@ -195,6 +219,18 @@ export class ProjectController {
 
   resolveComment = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const comment = await projectRepository.findCommentById(req.params.commentId);
+      if (!comment) throw new NotFoundError('Comment not found.');
+      const access = await verifyProjectAccess(comment.projectId.toString(), req.user!.userId, req.user!.role, false);
+      const isAuthor =
+        (comment.authorId as any)?._id?.toString() === req.user!.userId ||
+        comment.authorId?.toString() === req.user!.userId;
+      if (!isAuthor && !access.isOwner && !access.isGuide && !access.isAdmin) {
+        throw new ForbiddenError(
+          'Only the comment author, project owner, faculty guide, or administrator can resolve comments.'
+        );
+      }
+
       const updated = await projectRepository.updateComment(req.params.commentId, {
         status: req.body.status || 'RESOLVED',
         resolvedBy: new mongoose.Types.ObjectId(req.user!.userId),
@@ -247,6 +283,8 @@ export class ProjectController {
 
   addDocumentMetadata = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      await verifyProjectAccess(req.params.id, req.user!.userId, req.user!.role, true);
+
       const doc = await projectRepository.createDocument({
         projectId: new mongoose.Types.ObjectId(req.params.id),
         milestoneId: req.body.milestoneId ? new mongoose.Types.ObjectId(req.body.milestoneId) : undefined,
@@ -272,6 +310,8 @@ export class ProjectController {
 
   sendDiscussion = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      await verifyProjectAccess(req.params.id, req.user!.userId, req.user!.role, true);
+
       const msg = await projectRepository.createDiscussionMessage({
         projectId: new mongoose.Types.ObjectId(req.params.id),
         senderId: new mongoose.Types.ObjectId(req.user!.userId),
