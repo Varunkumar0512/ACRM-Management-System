@@ -20,11 +20,17 @@ export class FacultyProfileRepository {
   }
 
   async list(filter: Record<string, unknown> = {}, skip = 0, limit = 50): Promise<{ profiles: IFacultyProfile[]; total: number }> {
-    const [profiles, total] = await Promise.all([
-      FacultyProfile.find(filter).populate('userId', 'email fullName avatarUrl phone isActive').skip(skip).limit(limit),
-      FacultyProfile.countDocuments(filter),
-    ]);
-    return { profiles, total };
+    const rawProfiles = await FacultyProfile.find(filter)
+      .populate({
+        path: 'userId',
+        match: { isActive: true },
+        select: 'email fullName avatarUrl phone isActive role',
+      })
+      .skip(skip)
+      .limit(limit);
+
+    const profiles = rawProfiles.filter((p) => p.userId != null);
+    return { profiles, total: profiles.length };
   }
 
   async listAvailableGuides(department?: string): Promise<IFacultyProfile[]> {
@@ -35,7 +41,12 @@ export class FacultyProfileRepository {
     if (department) {
       filter.department = department;
     }
-    return FacultyProfile.find(filter).populate('userId', 'email fullName avatarUrl');
+    const rawProfiles = await FacultyProfile.find(filter).populate({
+      path: 'userId',
+      match: { isActive: true },
+      select: 'email fullName avatarUrl phone isActive role',
+    });
+    return rawProfiles.filter((p) => p.userId != null);
   }
 
   async incrementProjectCount(userId: string | mongoose.Types.ObjectId, delta: number): Promise<void> {

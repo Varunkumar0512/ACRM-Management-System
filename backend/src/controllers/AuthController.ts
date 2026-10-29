@@ -4,18 +4,21 @@ import { env } from '../config/env.js';
 
 export class AuthController {
   private setTokenCookies(res: Response, accessToken: string, refreshToken: string) {
+    const isSecure = env.COOKIE_SECURE || env.NODE_ENV === 'production';
+    const sameSiteSetting = isSecure ? 'none' : 'lax';
+
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
-      secure: env.COOKIE_SECURE,
-      sameSite: 'lax',
+      secure: isSecure,
+      sameSite: sameSiteSetting,
       maxAge: 15 * 60 * 1000, // 15 mins
       path: '/',
     });
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      secure: env.COOKIE_SECURE,
-      sameSite: 'lax',
+      secure: isSecure,
+      sameSite: sameSiteSetting,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: '/',
     });
@@ -83,16 +86,19 @@ export class AuthController {
   };
 
   private clearTokenCookies(res: Response) {
+    const isSecure = env.COOKIE_SECURE || env.NODE_ENV === 'production';
+    const sameSiteSetting = isSecure ? 'none' : 'lax';
+
     res.clearCookie('accessToken', {
       httpOnly: true,
-      secure: env.COOKIE_SECURE,
-      sameSite: 'lax',
+      secure: isSecure,
+      sameSite: sameSiteSetting,
       path: '/',
     });
     res.clearCookie('refreshToken', {
       httpOnly: true,
-      secure: env.COOKIE_SECURE,
-      sameSite: 'lax',
+      secure: isSecure,
+      sameSite: sameSiteSetting,
       path: '/',
     });
   }

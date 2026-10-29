@@ -22,7 +22,26 @@ import {
   FileText,
   Calendar,
   Layers,
+  RotateCw,
 } from 'lucide-react';
+
+const getFacultyUserId = (f: IFacultyProfile): string => {
+  if (!f) return '';
+  if (typeof f.userId === 'object' && f.userId && (f.userId as any)._id) {
+    return String((f.userId as any)._id);
+  }
+  if (typeof f.userId === 'string' && f.userId) {
+    return f.userId;
+  }
+  return f._id ? String(f._id) : '';
+};
+
+const getFacultyName = (f: IFacultyProfile): string => {
+  if (typeof f.userId === 'object' && f.userId && (f.userId as any).fullName) {
+    return (f.userId as any).fullName;
+  }
+  return 'Faculty Member';
+};
 
 const STEPS = [
   'Project Info',
@@ -51,6 +70,11 @@ export const CreateProjectWizard: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [createdProject, setCreatedProject] = useState<any>(null);
 
+  // Faculty guidance loading & filter state
+  const [isFacultyLoading, setIsFacultyLoading] = useState<boolean>(true);
+  const [facultyError, setFacultyError] = useState<string | null>(null);
+  const [filterByDepartment, setFilterByDepartment] = useState<boolean>(false);
+
   // Form State (persists throughout all wizard steps)
   const [formData, setFormData] = useState({
     draftId: draftId || '',
@@ -76,16 +100,39 @@ export const CreateProjectWizard: React.FC = () => {
   const [newObjective, setNewObjective] = useState('');
   const [newTech, setNewTech] = useState('');
 
+  const loadFaculty = async (silent = false) => {
+    if (!silent) setIsFacultyLoading(true);
+    setFacultyError(null);
+    try {
+      const data = await facultyApi.listFaculty({ availableOnly: true });
+      const list = (Array.isArray(data) ? data : data?.profiles) || [];
+      setFacultyGuides(list);
+    } catch (err: any) {
+      const message =
+        err.response?.data?.error?.message ||
+        err.response?.data?.message ||
+        err.message ||
+        'Unable to load faculty mentors from directory';
+      setFacultyError(message);
+    } finally {
+      setIsFacultyLoading(false);
+    }
+  };
+
+  // Re-fetch faculty when navigating to Step 7 if list is empty or previous error occurred
+  useEffect(() => {
+    if (currentStep === 6 && facultyGuides.length === 0 && !isFacultyLoading) {
+      loadFaculty();
+    }
+  }, [currentStep]);
+
   // Load research domains & available faculty guides
   useEffect(() => {
     researchApi
       .getDomains()
       .then(setDomains)
       .catch(() => {});
-    facultyApi
-      .listFaculty({ availableOnly: true })
-      .then((data) => setFacultyGuides(data.profiles || []))
-      .catch(() => {});
+    loadFaculty();
 
     // If resuming from a saved Draft
     if (draftId) {
@@ -802,55 +849,309 @@ export const CreateProjectWizard: React.FC = () => {
               <h3 style={{ fontSize: '1.15rem', fontWeight: 700 }}>Step 7: Faculty Mentorship Request</h3>
               <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>Step 7 of 8</span>
             </div>
-            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1.5rem' }}>
-              Select your Primary Faculty Guide respecting departmental mentorship capacity limits.
+            <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
+              Select your Primary Faculty Guide respecting departmental mentorship capacity limits. Co-Guide selection is optional.
             </p>
 
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label className="acr-label">Primary Faculty Guide (Required for submission)</label>
-              <select
-                className="acr-select"
-                value={formData.facultyGuideId}
-                onChange={(e) => setFormData({ ...formData, facultyGuideId: e.target.value })}
-              >
-                <option value="">Select a Faculty Member...</option>
-                {facultyGuides.map((f) => {
-                  const facultyUserId = f.userId?._id || f._id;
-                  return (
-                    <option key={facultyUserId} value={facultyUserId}>
-                      {f.userId?.fullName || 'Faculty'} — {f.designation} ({f.department}) • [
-                      {f.currentActiveProjectsCount || 0}/{f.maxActiveProjectsGuide} Projects]
-                    </option>
-                  );
-                })}
-              </select>
-              {fieldErrors.facultyGuideId && (
-                <div style={{ color: 'var(--danger-text)', fontSize: '0.75rem', marginTop: '0.25rem' }}>
-                  {fieldErrors.facultyGuideId}
-                </div>
-              )}
+            {/* Department Alignment / Filter Pill */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--bg-subtle)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <div style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)' }}>
+                Target Department: <strong style={{ color: 'var(--text-primary)' }}>{formData.department}</strong>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setFilterByDepartment(false)}
+                  style={{
+                    padding: '0.25rem 0.65rem',
+                    borderRadius: 'var(--radius-full)',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    border: '1px solid',
+                    borderColor: !filterByDepartment ? 'var(--primary-600)' : 'var(--border-subtle)',
+                    background: !filterByDepartment ? 'var(--primary-50)' : 'transparent',
+                    color: !filterByDepartment ? 'var(--primary-700)' : 'var(--text-muted)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  All Faculty ({facultyGuides.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterByDepartment(true)}
+                  style={{
+                    padding: '0.25rem 0.65rem',
+                    borderRadius: 'var(--radius-full)',
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    border: '1px solid',
+                    borderColor: filterByDepartment ? 'var(--primary-600)' : 'var(--border-subtle)',
+                    background: filterByDepartment ? 'var(--primary-50)' : 'transparent',
+                    color: filterByDepartment ? 'var(--primary-700)' : 'var(--text-muted)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {formData.department.split(' ')[0]} Only ({facultyGuides.filter((f) => f.department?.toLowerCase() === formData.department?.toLowerCase()).length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => loadFaculty()}
+                  disabled={isFacultyLoading}
+                  title="Reload faculty list"
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: 'var(--text-muted)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '0.25rem',
+                  }}
+                >
+                  <RotateCw size={14} className={isFacultyLoading ? 'animate-spin' : ''} />
+                </button>
+              </div>
             </div>
 
-            <div style={{ marginBottom: '1rem' }}>
-              <label className="acr-label">Faculty Co-Guide (Optional)</label>
-              <select
-                className="acr-select"
-                value={formData.coGuideId}
-                onChange={(e) => setFormData({ ...formData, coGuideId: e.target.value })}
+            {/* Loading State */}
+            {isFacultyLoading && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: '1.25rem',
+                  background: 'var(--bg-subtle)',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--border-subtle)',
+                  marginBottom: '1.5rem',
+                }}
               >
-                <option value="">None (Single Guide)</option>
-                {facultyGuides
-                  .filter((f) => (f.userId?._id || f._id) !== formData.facultyGuideId)
-                  .map((f) => {
-                    const facultyUserId = f.userId?._id || f._id;
-                    return (
-                      <option key={facultyUserId} value={facultyUserId}>
-                        {f.userId?.fullName || 'Faculty'} — {f.designation} ({f.department})
-                      </option>
-                    );
-                  })}
-              </select>
-            </div>
+                <div
+                  style={{
+                    width: '18px',
+                    height: '18px',
+                    border: '2px solid var(--primary-200)',
+                    borderTopColor: 'var(--primary-600)',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite',
+                  }}
+                />
+                <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                  Loading institutional faculty mentors from campus directory...
+                </span>
+              </div>
+            )}
+
+            {/* Error State */}
+            {facultyError && !isFacultyLoading && (
+              <div
+                style={{
+                  padding: '1.25rem',
+                  background: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  borderRadius: 'var(--radius-md)',
+                  color: '#991b1b',
+                  marginBottom: '1.5rem',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '0.875rem' }}>
+                    <AlertCircle size={18} />
+                    <span>Faculty Directory Unavailable</span>
+                  </div>
+                  <Button size="sm" variant="secondary" onClick={() => loadFaculty()}>
+                    Retry Loading
+                  </Button>
+                </div>
+                <div style={{ fontSize: '0.8125rem', lineHeight: 1.5 }}>
+                  {facultyError}. If you are in development mode, ensure the backend is running and faculty data is seeded.
+                </div>
+              </div>
+            )}
+
+            {/* Empty State */}
+            {!isFacultyLoading && !facultyError && facultyGuides.length === 0 && (
+              <div
+                style={{
+                  padding: '2.5rem 1.5rem',
+                  textAlign: 'center',
+                  background: 'var(--bg-subtle)',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px dashed var(--border-subtle)',
+                  marginBottom: '1.5rem',
+                }}
+              >
+                <Users size={36} style={{ color: 'var(--text-muted)', margin: '0 auto 0.75rem auto', display: 'block' }} />
+                <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.35rem' }}>
+                  No Registered Faculty Available
+                </div>
+                <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', maxWidth: '440px', margin: '0 auto 1.25rem auto', lineHeight: 1.5 }}>
+                  There are currently no active faculty members registered with available guidance capacity. Please contact your academic administrator or run the development seed script.
+                </p>
+                <Button size="sm" variant="secondary" onClick={() => loadFaculty()}>
+                  Refresh Directory
+                </Button>
+              </div>
+            )}
+
+            {/* Form Fields if Faculty Available */}
+            {!isFacultyLoading && facultyGuides.length > 0 && (
+              <>
+                {filterByDepartment &&
+                  facultyGuides.filter((f) => f.department?.toLowerCase() === formData.department?.toLowerCase()).length === 0 && (
+                    <div
+                      style={{
+                        padding: '0.875rem 1rem',
+                        background: '#eff6ff',
+                        border: '1px solid #bfdbfe',
+                        borderRadius: 'var(--radius-md)',
+                        fontSize: '0.8125rem',
+                        color: '#1e40af',
+                        marginBottom: '1.25rem',
+                      }}
+                    >
+                      No faculty found specifically under <strong>{formData.department}</strong>. Switch to "All Faculty" above to select an interdisciplinary mentor.
+                    </div>
+                  )}
+
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label className="acr-label">Primary Faculty Guide (Required for submission)</label>
+                  <select
+                    className="acr-select"
+                    value={formData.facultyGuideId}
+                    onChange={(e) => {
+                      const newGuideId = e.target.value;
+                      setFormData((prev) => ({
+                        ...prev,
+                        facultyGuideId: newGuideId,
+                        coGuideId: prev.coGuideId === newGuideId ? '' : prev.coGuideId,
+                      }));
+                      if (fieldErrors.facultyGuideId) {
+                        setFieldErrors((prev) => ({ ...prev, facultyGuideId: '' }));
+                      }
+                    }}
+                  >
+                    <option value="">Select a Faculty Member...</option>
+                    {(filterByDepartment
+                      ? facultyGuides.filter((f) => f.department?.toLowerCase() === formData.department?.toLowerCase())
+                      : facultyGuides
+                    ).map((f) => {
+                      const facultyUserId = getFacultyUserId(f);
+                      const isMatchingDept = f.department?.toLowerCase() === formData.department?.toLowerCase();
+                      const prefix = isMatchingDept ? '★ ' : '';
+                      return (
+                        <option key={facultyUserId} value={facultyUserId}>
+                          {prefix}{getFacultyName(f)} — {f.designation} ({f.department}) • [
+                          {f.currentActiveProjectsCount || 0}/{f.maxActiveProjectsGuide || 5} Projects]
+                        </option>
+                      );
+                    })}
+                  </select>
+                  {fieldErrors.facultyGuideId && (
+                    <div style={{ color: 'var(--danger-text)', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                      {fieldErrors.facultyGuideId}
+                    </div>
+                  )}
+                </div>
+
+                {/* Selected Primary Guide Profile Card preview */}
+                {(() => {
+                  const selectedGuide = facultyGuides.find((f) => getFacultyUserId(f) === formData.facultyGuideId);
+                  if (!selectedGuide) return null;
+                  return (
+                    <div
+                      style={{
+                        background: 'var(--primary-50)',
+                        border: '1px solid var(--primary-200)',
+                        borderRadius: 'var(--radius-md)',
+                        padding: '1rem',
+                        marginBottom: '1.5rem',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '0.875rem',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: '36px',
+                          height: '36px',
+                          borderRadius: '50%',
+                          background: 'var(--primary-600)',
+                          color: '#fff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 700,
+                          fontSize: '0.875rem',
+                          flexShrink: 0,
+                        }}
+                      >
+                        {getFacultyName(selectedGuide).replace(/^Dr\.\s*/i, '').charAt(0) || 'F'}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, fontSize: '0.925rem', color: 'var(--primary-900)' }}>
+                          {getFacultyName(selectedGuide)}
+                        </div>
+                        <div style={{ fontSize: '0.8125rem', color: 'var(--primary-800)', marginTop: '0.1rem' }}>
+                          {selectedGuide.designation} • {selectedGuide.department}
+                        </div>
+                        {selectedGuide.cabinLocation && (
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                            Location: {selectedGuide.cabinLocation}
+                          </div>
+                        )}
+                        {selectedGuide.areasOfExpertise && selectedGuide.areasOfExpertise.length > 0 && (
+                          <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', marginTop: '0.4rem' }}>
+                            {selectedGuide.areasOfExpertise.map((exp: string, idx: number) => (
+                              <span
+                                key={idx}
+                                style={{
+                                  fontSize: '0.7rem',
+                                  padding: '0.15rem 0.45rem',
+                                  background: '#fff',
+                                  border: '1px solid var(--primary-300)',
+                                  borderRadius: 'var(--radius-sm)',
+                                  color: 'var(--primary-800)',
+                                }}
+                              >
+                                {exp}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                <div style={{ marginBottom: '1rem' }}>
+                  <label className="acr-label">Faculty Co-Guide (Optional)</label>
+                  <select
+                    className="acr-select"
+                    value={formData.coGuideId}
+                    onChange={(e) => setFormData({ ...formData, coGuideId: e.target.value })}
+                  >
+                    <option value="">None (Single Guide)</option>
+                    {facultyGuides
+                      .filter((f) => getFacultyUserId(f) !== formData.facultyGuideId)
+                      .map((f) => {
+                        const facultyUserId = getFacultyUserId(f);
+                        const isMatchingDept = f.department?.toLowerCase() === formData.department?.toLowerCase();
+                        const prefix = isMatchingDept ? '★ ' : '';
+                        return (
+                          <option key={facultyUserId} value={facultyUserId}>
+                            {prefix}{getFacultyName(f)} — {f.designation} ({f.department})
+                          </option>
+                        );
+                      })}
+                  </select>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem', display: 'block' }}>
+                    Co-guides can be selected from any department to support interdisciplinary research.
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -997,14 +1298,18 @@ export const CreateProjectWizard: React.FC = () => {
                 </div>
                 <div style={{ fontSize: '0.875rem' }}>
                   <strong>Primary Guide:</strong>{' '}
-                  {facultyGuides.find((f) => (f.userId?._id || f._id) === formData.facultyGuideId)?.userId?.fullName ||
-                    'Pending selection'}
+                  {(() => {
+                    const guide = facultyGuides.find((f) => getFacultyUserId(f) === formData.facultyGuideId);
+                    return guide ? `${getFacultyName(guide)} (${guide.designation}, ${guide.department})` : 'Pending selection';
+                  })()}
                 </div>
                 {formData.coGuideId && (
                   <div style={{ fontSize: '0.8125rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
                     <strong>Co-Guide:</strong>{' '}
-                    {facultyGuides.find((f) => (f.userId?._id || f._id) === formData.coGuideId)?.userId?.fullName ||
-                      'Selected'}
+                    {(() => {
+                      const coGuide = facultyGuides.find((f) => getFacultyUserId(f) === formData.coGuideId);
+                      return coGuide ? `${getFacultyName(coGuide)} (${coGuide.designation}, ${coGuide.department})` : 'Selected';
+                    })()}
                   </div>
                 )}
                 {formData.teamMemberEmails && (

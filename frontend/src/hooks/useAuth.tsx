@@ -39,31 +39,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     reloadUser();
   }, []);
 
-  const signIn = async (credentials: any) => {
-    const data = await authApi.signIn(credentials);
+  const handleAuthSuccess = (data: any) => {
     setUser(data.user);
     setProfile(data.profile);
+    if (data.tokens?.accessToken) {
+      localStorage.setItem('acr_access_token', data.tokens.accessToken);
+    }
+    if (data.tokens?.refreshToken) {
+      localStorage.setItem('acr_refresh_token', data.tokens.refreshToken);
+    }
+  };
+
+  const signIn = async (credentials: any) => {
+    const data = await authApi.signIn(credentials);
+    handleAuthSuccess(data);
     return data;
   };
 
   const signInWithGoogle = async (idToken: string, linkPassword?: string) => {
     const data = await authApi.googleAuth({ idToken, linkPassword });
-    setUser(data.user);
-    setProfile(data.profile);
+    handleAuthSuccess(data);
     return data;
   };
 
   const signUpStudent = async (formData: any) => {
     const data = await authApi.signUpStudent(formData);
-    setUser(data.user);
-    setProfile(data.profile);
+    handleAuthSuccess(data);
     return data;
   };
 
   const signUpFaculty = async (formData: any) => {
     const data = await authApi.signUpFaculty(formData);
-    setUser(data.user);
-    setProfile(data.profile);
+    handleAuthSuccess(data);
     return data;
   };
 
@@ -71,6 +78,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await authApi.signOut();
     } finally {
+      localStorage.removeItem('acr_access_token');
+      localStorage.removeItem('acr_refresh_token');
       setUser(null);
       setProfile(null);
       window.location.href = '/sign-in';

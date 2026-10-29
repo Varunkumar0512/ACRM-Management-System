@@ -24,6 +24,18 @@ export const apiClient = axios.create({
   },
 });
 
+// Attach Authorization Bearer token from localStorage on every request
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('acr_access_token');
+    if (token && !config.headers['Authorization']) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 let isRefreshing = false;
 let failedQueue: Array<{ resolve: (token: string) => void; reject: (error: any) => void }> = [];
 
@@ -45,14 +57,14 @@ apiClient.interceptors.response.use(
 
     // Skip refresh token request itself to avoid infinite loop
     if (
-      originalRequest.url?.includes('/auth/refresh') ||
-      originalRequest.url?.includes('/auth/sign-in') ||
-      originalRequest.url?.includes('/auth/google')
+      originalRequest?.url?.includes('/auth/refresh') ||
+      originalRequest?.url?.includes('/auth/sign-in') ||
+      originalRequest?.url?.includes('/auth/google')
     ) {
       return Promise.reject(error);
     }
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest?._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -68,8 +80,21 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshResponse = await axios.post(`${apiBaseUrl}/auth/refresh`, {}, { withCredentials: true });
+        const storedRefreshToken = localStorage.getItem('acr_refresh_token');
+        const refreshResponse = await axios.post(
+          `${apiBaseUrl}/auth/refresh`,
+          { refreshToken: storedRefreshToken },
+          { withCredentials: true }
+        );
         const newAccessToken = refreshResponse.data.data.accessToken;
+        const newRefreshToken = refreshResponse.data.data.refreshToken;
+
+        if (newAccessToken) {
+          localStorage.setItem('acr_access_token', newAccessToken);
+        }
+        if (newRefreshToken) {
+          localStorage.setItem('acr_refresh_token', newRefreshToken);
+        }
 
         apiClient.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
         originalRequest.headers['Authorization'] = `Bearer ${newAccessToken}`;
@@ -77,6 +102,8 @@ apiClient.interceptors.response.use(
         processQueue(null, newAccessToken);
         return apiClient(originalRequest);
       } catch (refreshErr) {
+        localStorage.removeItem('acr_access_token');
+        localStorage.removeItem('acr_refresh_token');
         processQueue(refreshErr, null);
         return Promise.reject(refreshErr);
       } finally {
