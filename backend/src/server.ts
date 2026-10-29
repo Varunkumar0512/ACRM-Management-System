@@ -12,7 +12,7 @@ async function bootstrap() {
     const server = app.listen(env.PORT, () => {
       logger.info(`ACR Backend Server running on http://localhost:${env.PORT}`);
       logger.info(`Environment: ${env.NODE_ENV}`);
-      logger.info(`CORS allowed origin: ${env.CORS_ORIGIN}`);
+      logger.info(`CORS allowed origins: ${env.ALLOWED_ORIGINS.join(', ')}`);
     });
 
     const shutdown = async (signal: string) => {

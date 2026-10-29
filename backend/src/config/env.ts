@@ -20,11 +20,27 @@ if (isProduction) {
   }
 }
 
+export const DEFAULT_ALLOWED_ORIGINS: string[] = [
+  'https://acrm-management-system.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:5173',
+];
+
+const envCorsOrigins = (process.env.CORS_ORIGIN || '')
+  .split(',')
+  .map((origin) => origin.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
+
+export const ALLOWED_ORIGINS: string[] = Array.from(
+  new Set([...DEFAULT_ALLOWED_ORIGINS, ...envCorsOrigins])
+);
+
 export const env = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   PORT: parseInt(process.env.PORT || '5000', 10),
   MONGODB_URI: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/acr_platform',
-  CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  CORS_ORIGIN: process.env.CORS_ORIGIN || 'https://acrm-management-system.vercel.app',
+  ALLOWED_ORIGINS,
   JWT_ACCESS_SECRET: process.env.JWT_ACCESS_SECRET || DEV_ACCESS_SECRET,
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || DEV_REFRESH_SECRET,
   JWT_ACCESS_EXPIRES_IN: process.env.JWT_ACCESS_EXPIRES_IN || '15m',

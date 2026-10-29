@@ -2,7 +2,7 @@ import express, { Express } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
-import { env } from './config/env.js';
+import { env, ALLOWED_ORIGINS } from './config/env.js';
 import apiRouter from './routes/index.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { apiRateLimiter } from './middleware/rateLimiter.js';
@@ -22,15 +22,36 @@ export function createApp(): Express {
     })
   );
 
-  // CORS
-  app.use(
-    cors({
-      origin: env.CORS_ORIGIN,
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    })
-  );
+  // CORS configuration allowing production Vercel frontend, local development ports, and validated origins
+  const corsOptions: cors.CorsOptions = {
+    origin: (requestOrigin, callback) => {
+      // Allow requests with no origin (e.g. mobile apps, curl, server-to-server, health checks)
+      if (!requestOrigin) {
+        return callback(null, true);
+      }
+
+      const normalized = requestOrigin.trim().replace(/\/+$/, '').toLowerCase();
+      const isAllowed = ALLOWED_ORIGINS.some(
+        (allowed) => allowed.trim().replace(/\/+$/, '').toLowerCase() === normalized
+      );
+
+      if (isAllowed) {
+        return callback(null, true);
+      }
+
+      // Do not reflect unapproved origins
+      return callback(null, false);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+    exposedHeaders: ['Set-Cookie'],
+    optionsSuccessStatus: 204,
+  };
+
+  // CORS middleware - mounted before parsers, rate limiters, and routes
+  app.use(cors(corsOptions));
+  app.options('*', cors(corsOptions));
 
   // Parsers
   app.use(cookieParser());
