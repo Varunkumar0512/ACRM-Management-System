@@ -275,7 +275,7 @@ export const FacultyDashboard: React.FC = () => {
                         <strong style={{ color: 'var(--text-secondary)' }}>
                           {proj.ownerId?.fullName}
                         </strong>{' '}
-                        ({proj.ownerId?.email})
+                        ({proj.ownerId?.studentId ? `${proj.ownerId.studentId} • ` : ''}{proj.ownerId?.email})
                       </div>
                     </div>
 
@@ -372,7 +372,7 @@ export const FacultyDashboard: React.FC = () => {
                       </div>
 
                       <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.45rem' }}>
-                        Student Lead: <strong style={{ color: 'var(--text-secondary)' }}>{p.ownerId?.fullName}</strong> ({p.ownerId?.email})
+                        Student Lead: <strong style={{ color: 'var(--text-secondary)' }}>{p.ownerId?.fullName}</strong> ({p.ownerId?.studentId ? `${p.ownerId.studentId} • ` : ''}{p.ownerId?.email})
                       </div>
                     </div>
 

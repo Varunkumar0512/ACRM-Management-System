@@ -155,6 +155,26 @@ export const ProjectsListPage: React.FC = () => {
                       </span>
                     ))}
                   </div>
+
+                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.6rem' }}>
+                    Student Lead: <strong style={{ color: 'var(--text-secondary)' }}>{p.ownerId?.fullName}</strong>
+                    {(p.ownerId as any)?.studentId && (
+                      <span
+                        style={{
+                          marginLeft: '0.4rem',
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: '0.6875rem',
+                          fontWeight: 700,
+                          padding: '0.1rem 0.4rem',
+                          borderRadius: 'var(--radius-pill)',
+                          backgroundColor: 'rgba(65, 105, 225, 0.12)',
+                          color: 'var(--primary-600)',
+                        }}
+                      >
+                        {(p.ownerId as any).studentId}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '1rem', minWidth: '180px' }}>

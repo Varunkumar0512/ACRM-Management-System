@@ -309,7 +309,25 @@ export const ProjectWorkspace: React.FC = () => {
 
             <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
               <span>Department: <strong>{project.department}</strong></span>
-              <span>Owner: <strong>{project.ownerId?.fullName}</strong></span>
+              <span>
+                Owner: <strong>{project.ownerId?.fullName}</strong>
+                {project.ownerId?.studentId && (
+                  <span
+                    style={{
+                      marginLeft: '0.4rem',
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '0.72rem',
+                      fontWeight: 700,
+                      padding: '0.12rem 0.45rem',
+                      borderRadius: 'var(--radius-pill)',
+                      backgroundColor: 'rgba(65, 105, 225, 0.12)',
+                      color: 'var(--primary-600)',
+                    }}
+                  >
+                    {project.ownerId.studentId}
+                  </span>
+                )}
+              </span>
               <span>Primary Guide: <strong>{guides.find((g: any) => g.role === 'PRIMARY_GUIDE')?.facultyId?.fullName || 'Pending'}</strong></span>
             </div>
           </div>
@@ -787,7 +805,25 @@ export const ProjectWorkspace: React.FC = () => {
               {members.map((m: any) => (
                 <div key={m._id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 0', borderBottom: '1px solid var(--border-subtle)' }}>
                   <div>
-                    <div style={{ fontWeight: 600 }}>{m.studentId?.fullName}</div>
+                    <div style={{ fontWeight: 600 }}>
+                      {m.studentId?.fullName}
+                      {m.studentId?.studentId && (
+                        <span
+                          style={{
+                            marginLeft: '0.45rem',
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: '0.7rem',
+                            fontWeight: 700,
+                            padding: '0.1rem 0.4rem',
+                            borderRadius: 'var(--radius-pill)',
+                            backgroundColor: 'rgba(65, 105, 225, 0.12)',
+                            color: 'var(--primary-600)',
+                          }}
+                        >
+                          {m.studentId.studentId}
+                        </span>
+                      )}
+                    </div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{m.studentId?.email}</div>
                   </div>
                   <span className="acr-badge acr-badge-info">{m.role}</span>

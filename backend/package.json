@@ -8,6 +8,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "seed": "tsx src/seeds/seed.ts",
+    "seed:projects": "tsx src/seeds/seedProjects.ts",
     "seed:faculty": "tsx src/seeds/seedFaculty.ts",
     "provision:user": "tsx src/seeds/provisionUser.ts",
     "test": "vitest run"

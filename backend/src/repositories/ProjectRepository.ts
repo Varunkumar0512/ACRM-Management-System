@@ -6,6 +6,7 @@ import { DocumentModel, IDocument } from '../models/Document.js';
 import { Comment, IComment } from '../models/Comment.js';
 import { Review, IReview } from '../models/Review.js';
 import { ProjectDiscussion, IProjectDiscussion } from '../models/ProjectDiscussion.js';
+import { StudentProfile } from '../models/StudentProfile.js';
 import { ProjectStatus, MilestoneStatus } from '../config/constants.js';
 import mongoose from 'mongoose';
 
@@ -17,9 +18,17 @@ export class ProjectRepository {
   }
 
   async findById(id: string): Promise<IProject | null> {
-    return Project.findById(id)
+    const project = await Project.findById(id)
       .populate('domainId', 'name slug icon')
       .populate('ownerId', 'email fullName avatarUrl');
+
+    if (project && project.ownerId) {
+      const sp = await StudentProfile.findOne({ userId: (project.ownerId as any)._id }).lean();
+      if (sp) {
+        (project.ownerId as any).studentId = sp.studentId;
+      }
+    }
+    return project;
   }
 
   async update(id: string, updates: Partial<IProject>): Promise<IProject | null> {
@@ -38,6 +47,19 @@ export class ProjectRepository {
         .limit(limit),
       Project.countDocuments(filter),
     ]);
+
+    const ownerIds = projects.map((p) => (p.ownerId as any)?._id).filter(Boolean);
+    if (ownerIds.length > 0) {
+      const profiles = await StudentProfile.find({ userId: { $in: ownerIds } }).lean();
+      const profileMap = new Map(profiles.map((sp) => [sp.userId.toString(), sp.studentId]));
+      for (const p of projects) {
+        const oId = (p.ownerId as any)?._id?.toString();
+        if (oId && profileMap.has(oId)) {
+          (p.ownerId as any).studentId = profileMap.get(oId);
+        }
+      }
+    }
+
     return { projects, total };
   }
 
@@ -65,9 +87,23 @@ export class ProjectRepository {
   }
 
   async getMembers(projectId: string): Promise<IProjectMember[]> {
-    return ProjectMember.find({ projectId })
+    const members = await ProjectMember.find({ projectId })
       .populate('studentId', 'email fullName avatarUrl')
       .sort({ role: 1, createdAt: 1 });
+
+    const studentUserIds = members.map((m) => (m.studentId as any)?._id).filter(Boolean);
+    if (studentUserIds.length > 0) {
+      const profiles = await StudentProfile.find({ userId: { $in: studentUserIds } }).lean();
+      const profileMap = new Map(profiles.map((sp) => [sp.userId.toString(), sp.studentId]));
+      for (const m of members) {
+        const sId = (m.studentId as any)?._id?.toString();
+        if (sId && profileMap.has(sId)) {
+          (m.studentId as any).studentId = profileMap.get(sId);
+        }
+      }
+    }
+
+    return members;
   }
 
   async findMembership(projectId: string, studentId: string): Promise<IProjectMember | null> {
@@ -111,7 +147,7 @@ export class ProjectRepository {
   async findAssignedProjectsForFaculty(facultyId: string, status?: string): Promise<IProjectGuide[]> {
     const query: Record<string, unknown> = { facultyId };
     if (status) query.status = status;
-    return ProjectGuide.find(query)
+    const guides = await ProjectGuide.find(query)
       .populate({
         path: 'projectId',
         populate: [
@@ -120,6 +156,20 @@ export class ProjectRepository {
         ],
       })
       .sort({ requestedAt: -1 });
+
+    const ownerIds = guides.map((g) => (g.projectId as any)?.ownerId?._id).filter(Boolean);
+    if (ownerIds.length > 0) {
+      const profiles = await StudentProfile.find({ userId: { $in: ownerIds } }).lean();
+      const profileMap = new Map(profiles.map((sp) => [sp.userId.toString(), sp.studentId]));
+      for (const g of guides) {
+        const owner = (g.projectId as any)?.ownerId;
+        if (owner && profileMap.has(owner._id?.toString())) {
+          owner.studentId = profileMap.get(owner._id.toString());
+        }
+      }
+    }
+
+    return guides;
   }
 
   // Milestones
